@@ -1,51 +1,111 @@
 // st/main.ts
-
 import { simpleHash, deobfuscateAnswer } from "../core/cryption";
 
-// HTML側に埋め込まれるデータの型定義
-interface QuizData {
-    correctHash: string;   // 正解のハッシュ値
-    encryptedText: string; // 暗号化された答え
+
+
+// 記録用データ構造
+interface StudentProgress {
+    studentId: string;
+    name: string;
+    answers: {
+        [index: number]: {
+            userAnswer: string;
+            isCorrect: boolean;
+            timestamp: string;
+        }
+    };
+    savedAt: string;
 }
 
 declare global {
     interface Window {
-        QUIZ_DATA: QuizData;
+        QUIZ_DATA_LIST: QuizItem[];
     }
 }
 
 function initStudentSystem() {
-    // IDは後で生成するHTMLと合わせる必要があります
-    const input = document.getElementById('answerInput') as HTMLInputElement;
-    const button = document.getElementById('checkButton') as HTMLButtonElement;
-    const resultArea = document.getElementById('result') as HTMLDivElement;
-    const data = window.QUIZ_DATA;
+    const quizList = window.QUIZ_DATA_LIST;
+    if (!quizList) return;
 
-    if (!input || !button || !resultArea) {
-        console.error("DOM要素が見つかりません");
-        return;
-    }
+    // 進行状況管理
+    const progress: StudentProgress = {
+        studentId: "",
+        name: "",
+        answers: {},
+        savedAt: ""
+    };
 
-    if (!data) {
-        resultArea.textContent = "エラー: 問題データが不正です";
-        return;
-    }
+    // 全ての問題コンテナを取得
+    // HTML生成時に class="problem-container" data-index="0" のように付与されている前提
+    const containers = document.querySelectorAll('.problem-container');
 
-    button.addEventListener('click', () => {
-        const userVal = input.value;
-        const userHash = simpleHash(userVal);
+    containers.forEach((container) => {
+        const indexStr = container.getAttribute('data-index');
+        if (indexStr === null) return;
+        const index = parseInt(indexStr, 10);
+        const data = quizList[index];
 
-        if (userHash === data.correctHash) {
-            const realAnswer = deobfuscateAnswer(data.encryptedText);
-            // 2016年頃のブラウザでも動く標準的なDOM操作
-            resultArea.innerHTML = "正解です！ 答え: <b>" + realAnswer + "</b>";
-            resultArea.style.color = "blue";
-        } else {
-            resultArea.textContent = "不正解です。";
-            resultArea.style.color = "red";
-        }
+        const input = container.querySelector('.student-input') as HTMLInputElement;
+        const btn = container.querySelector('.check-btn') as HTMLButtonElement;
+        const msg = container.querySelector('.result-msg') as HTMLSpanElement;
+
+        if (!input || !btn || !msg) return;
+
+        btn.addEventListener('click', () => {
+            const val = input.value.trim();
+            const hash = simpleHash(val);
+            const isCorrect = (hash === data.correctHash);
+
+            // 結果表示
+            if (isCorrect) {
+                const ans = deobfuscateAnswer(data.encryptedText);
+                msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
+                // 正解したら入力不可にするなどの制御も可能
+                input.disabled = true;
+                btn.disabled = true;
+            } else {
+                msg.innerHTML = `<span style="color:red">不正解</span>`;
+            }
+
+            // データ記録
+            progress.answers[index] = {
+                userAnswer: val,
+                isCorrect: isCorrect,
+                timestamp: new Date().toISOString()
+            };
+        });
     });
+
+    // --- JSON保存機能 ---
+    const saveBtn = document.getElementById('save-btn');
+    const idInput = document.getElementById('student-id') as HTMLInputElement;
+    const nameInput = document.getElementById('student-name') as HTMLInputElement;
+
+    if (saveBtn && idInput && nameInput) {
+        saveBtn.addEventListener('click', () => {
+            // ユーザー情報の更新
+            progress.studentId = idInput.value;
+            progress.name = nameInput.value;
+            progress.savedAt = new Date().toISOString();
+
+            if (!progress.studentId || !progress.name) {
+                alert("学籍番号と氏名を入力してください");
+                return;
+            }
+
+            // JSONファイル生成
+            const jsonStr = JSON.stringify(progress, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            
+            // ダウンロード発火
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            // ファイル名: 学籍番号_氏名.json
+            link.download = `${progress.studentId}_${progress.name}_progress.json`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+    }
 }
 
-// 読み込み完了後に実行
 document.addEventListener('DOMContentLoaded', initStudentSystem);

@@ -1,117 +1,122 @@
 // tc/main.ts
-import { simpleHash, obfuscateAnswer } from '../core/cryption';
+import { parseMarkdown } from './parser';
 import '../style.css';
 
-// 生成するHTMLのテンプレート関数
-function generateStudentHTML(problemText: string, correctHash: string, encryptedText: string, scriptUrl: string): string
-{
-    // ヒアドキュメントでHTMLを構築
-    // 生徒側のHTML構造は st/main.ts が期待するIDと一致させる必要があります
+// テンプレート関数（生徒用HTML全体の骨組み）
+function generateStudentHTML(bodyContent: string, quizData: any[], scriptUrl: string): string {
     return `<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>問題演習</title>
+    <title>授業資料</title>
     <style>
-        body { font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; padding: 20px; text-align: center; }
-        .container { max-width: 600px; margin: 0 auto; text-align: left; }
-        .problem-box { border: 2px solid #333; padding: 20px; margin-bottom: 20px; border-radius: 8px; background-color: #f9f9f9; }
-        .input-area { margin-top: 20px; padding: 20px; background-color: #eee; border-radius: 8px; }
-        input[type="text"] { padding: 10px; width: 60%; font-size: 16px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
-        button:hover { background-color: #0056b3; }
-        #result { margin-top: 20px; font-weight: bold; font-size: 18px; min-height: 1.5em; }
+        body { font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        /* #pb (問題) のスタイル */
+        .problem-container { 
+            border: 2px solid #007bff; padding: 15px; margin: 20px 0; 
+            border-radius: 8px; background-color: #f0f8ff; 
+        }
+        .question-text { font-weight: bold; margin-top: 0; }
+        .result-msg { margin-left: 10px; font-weight: bold; }
+        
+        /* #ex (例・補足) のスタイル (簡易実装) */
+        h3 { border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        
+        /* 制御用エリア */
+        #save-area { 
+            margin-top: 50px; padding: 20px; border-top: 1px solid #ccc; text-align: center; 
+        }
+        input, button { font-size: 1rem; padding: 5px 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>演習問題</h2>
-        
-        <div class="problem-box">
-            <p>${problemText.replace(/\n/g, '<br>')}</p>
-        </div>
+        ${bodyContent}
 
-        <div class="input-area">
-            <input type="text" id="answerInput" placeholder="回答を入力してください">
-            <button id="checkButton">回答する</button>
-            <div id="result"></div>
+        <div id="save-area">
+            <h3>学習の記録</h3>
+            <label>学籍番号: <input type="text" id="student-id"></label>
+            <label>氏名: <input type="text" id="student-name"></label>
+            <button id="save-btn">学習データを保存する</button>
         </div>
     </div>
 
     <script>
-        // 教員ツールによって生成されたデータ
-        window.QUIZ_DATA = {
-            correctHash: "${correctHash}",
-            encryptedText: "${encryptedText}"
-        };
+        // 問題データ (配列として保持)
+        window.QUIZ_DATA_LIST = ${JSON.stringify(quizData)};
     </script>
-
     <script src="${scriptUrl}"></script>
 </body>
 </html>`;
 }
 
-// 教員用画面の構築
+// 教員用画面UI
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div style="max-width: 800px; margin: 0 auto; padding: 2rem;">
-    <h1>教員用：問題作成ツール</h1>
-    
-    <div style="margin-bottom: 1rem;">
-      <label style="display:block; font-weight:bold;">1. 問題文</label>
-      <textarea id="tc-problem" rows="4" style="width:100%; padding:0.5rem;"></textarea>
+  <div style="display: flex; height: 100vh; flex-direction: column;">
+    <header style="padding: 10px; background: #eee; border-bottom: 1px solid #ccc;">
+        <h1>授業資料作成ツール</h1>
+        <button id="tc-download">HTML出力</button>
+        <input type="text" id="tc-url" value="student-main.js" size="30" placeholder="JSファイルURL">
+    </header>
+    <div style="display: flex; flex: 1; overflow: hidden;">
+        <div style="flex: 1; display: flex; flex-direction: column; border-right: 1px solid #ccc;">
+            <div style="padding: 5px; background: #f9f9f9; font-size: 0.9em;">
+                Markdown入力 (#pb 問題 | 答え)
+            </div>
+            <textarea id="tc-input" style="flex: 1; padding: 10px; resize: none; border: none; outline: none;"></textarea>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; background: #fff;">
+             <div style="padding: 5px; background: #f9f9f9; font-size: 0.9em;">
+                プレビュー
+            </div>
+            <div id="tc-preview" style="flex: 1; padding: 20px; overflow-y: auto;"></div>
+        </div>
     </div>
-
-    <div style="margin-bottom: 1rem;">
-      <label style="display:block; font-weight:bold;">2. 正解 (完全一致判定)</label>
-      <input type="text" id="tc-answer" style="width:100%; padding:0.5rem;">
-    </div>
-
-    <div style="margin-bottom: 1rem;">
-        <label style="display:block; font-weight:bold;">3. ロジックファイルのURL (GitHub Pages等)</label>
-        <input type="text" id="tc-script-url" value="https://example.github.io/student-logic.js" style="width:100%; padding:0.5rem; color:#666;">
-        <small>※ GitHubへアップロードしたJSファイルのURLを指定してください</small>
-    </div>
-
-    <button id="tc-generate" style="padding:1rem 2rem; font-size:1.2rem; cursor:pointer;">
-      生徒用HTMLをダウンロード
-    </button>
   </div>
 `;
 
-// イベントリスナーの設定
-const generateBtn = document.getElementById('tc-generate') as HTMLButtonElement;
-const problemInput = document.getElementById('tc-problem') as HTMLTextAreaElement;
-const answerInput = document.getElementById('tc-answer') as HTMLInputElement;
-const urlInput = document.getElementById('tc-script-url') as HTMLInputElement;
+// ロジック
+const inputArea = document.getElementById('tc-input') as HTMLTextAreaElement;
+const previewArea = document.getElementById('tc-preview') as HTMLDivElement;
+const downloadBtn = document.getElementById('tc-download') as HTMLButtonElement;
+const urlInput = document.getElementById('tc-url') as HTMLInputElement;
 
-generateBtn.addEventListener('click', () => 
-{
-    const problem = problemInput.value;
-    const answer = answerInput.value;
-    const url = urlInput.value;
+// 初期データ
+inputArea.value = `# 第1回 イントロダクション
 
-    if (!problem || !answer)
-    {
-        alert("問題文と正解を入力してください。");
-        return;
-    }
+ようこそ。ここでは基本的な計算を学びます。
 
-    // 1. 正解からハッシュ値を計算 (判定用)
-    const hash = simpleHash(answer);
+## 例題
+#ex 計算の基本
+1 + 1 は 2 です。
 
-    // 2. 正解を難読化 (表示用)
-    const encrypted = obfuscateAnswer(answer);
+## 演習問題
+以下の問題に答えてください。
 
-    // 3. HTML文字列を生成
-    const fileContent = generateStudentHTML(problem, hash, encrypted, url);
+#pb 10 + 20 は？ | 30
+#pb "Hello" の意味は？ | こんにちは
+`;
 
-    // 4. ダウンロード処理
-    const blob = new Blob([fileContent], { type: 'text/html' });
+// 入力イベントでプレビュー更新
+inputArea.addEventListener('input', () => {
+    const result = parseMarkdown(inputArea.value);
+    previewArea.innerHTML = result.html;
+});
+
+// 初回実行
+previewArea.innerHTML = parseMarkdown(inputArea.value).html;
+
+// ダウンロード処理
+downloadBtn.addEventListener('click', () => {
+    const result = parseMarkdown(inputArea.value);
+    const html = generateStudentHTML(result.html, result.quizData, urlInput.value);
+    
+    const blob = new Blob([html], { type: 'text/html' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `problem_${Date.now()}.html`; // ファイル名にタイムスタンプ付与
+    link.download = `lecture_${Date.now()}.html`;
     link.click();
-    
-    // メモリ解放
     URL.revokeObjectURL(link.href);
 });
