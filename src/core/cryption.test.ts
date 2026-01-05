@@ -1,3 +1,5 @@
+// core/cryption.test.ts
+
 import { describe, it, expect } from 'vitest';
 import { simpleHash, obfuscateAnswer, deobfuscateAnswer } from './cryption';
 

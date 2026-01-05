@@ -1,3 +1,5 @@
+// vite.config.st.ts
+
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
@@ -7,13 +9,12 @@ export default defineConfig({
         outDir: 'dist/student',
         emptyOutDir: true,
         lib: {
-            entry: resolve(__dirname, 'src/st/logic.ts'),
-            name: 'StudentLogic',
-            fileName: () => 'student-logic.js',
+            entry: resolve(__dirname, 'src/st/main.ts'),
+            name: 'StudentMain',
+            fileName: () => 'student-main.js',
             formats: ['iife'] // 即時実行関数 (レガシーブラウザ用)
         },
         minify: 'terser',
-        // Chrome 50 (2016) は ES2015(ES6) を概ねサポートしています
         target: 'es2015', 
     }
 });
