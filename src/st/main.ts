@@ -1,6 +1,6 @@
 // st/main.ts
 import { simpleHash, deobfuscateAnswer } from "../core/cryption";
-import type { QuizItem } from "../core/type";
+import type { QuizItem, StudentProgress } from "../core/type";
 
 
 declare global {
