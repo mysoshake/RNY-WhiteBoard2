@@ -24,6 +24,6 @@ dist-ssr
 *.sw?
 
 # Add
-*.note.md
+*.note.*
 *.local.*
 *.env.*
