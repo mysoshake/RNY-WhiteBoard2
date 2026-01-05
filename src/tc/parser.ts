@@ -2,7 +2,7 @@
 
 import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../core/cryption';
-import type { QuizItem } from '../core/type';
+import type { ParseResult } from '../core/type';
 
 
 /**
