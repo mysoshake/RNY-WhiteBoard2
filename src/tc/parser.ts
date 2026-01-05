@@ -2,14 +2,8 @@
 
 import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../core/cryption';
+import type { QuizItem } from '../core/type';
 
-export interface ParseResult {
-    html: string;
-    quizData: {
-        correctHash: string;
-        encryptedText: string;
-    }[];
-}
 
 /**
  * 独自マークダウンを解析し、HTMLと問題データを生成する
