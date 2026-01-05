@@ -58,7 +58,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <header style="padding: 10px; background: #eee; border-bottom: 1px solid #ccc;">
         <h1>授業資料作成ツール</h1>
         <button id="tc-download">HTML出力</button>
-        <input type="text" id="tc-url" value="student-main.js" size="30" placeholder="JSファイルURL">
+        <input type="text" id="tc-url" value="  " size="30" placeholder="JSファイルURL">
     </header>
     <div style="display: flex; flex: 1; overflow: hidden;">
         <div style="flex: 1; display: flex; flex-direction: column; border-right: 1px solid #ccc;">
