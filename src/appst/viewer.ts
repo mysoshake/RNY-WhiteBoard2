@@ -163,6 +163,8 @@ function initStudentSystem() {
       URL.revokeObjectURL(link.href);
     });
   }
+  
+  updateGateVisibility();
 }
 
 document.addEventListener('DOMContentLoaded', initStudentSystem);
