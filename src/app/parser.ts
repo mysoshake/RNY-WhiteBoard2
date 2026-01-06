@@ -1,6 +1,6 @@
 // ./src/app/parser.ts
 
-import { marked, parseInline } from 'marked';
+import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
 import type { MacroDef, ParseResult, ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
