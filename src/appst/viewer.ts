@@ -8,12 +8,10 @@ declare global {
   }
 }
 
-
 function initStudentSystem() {
   const quizList = window.QUIZ_DATA_LIST;
   if (!quizList) return;
 
-  // 進行状況管理
   const progress: StudentProgress = {
     studentId: "",
     name: "",
@@ -21,7 +19,7 @@ function initStudentSystem() {
     savedAt: ""
   };
   
-  // ゲートシステム: 表示制御ロジック
+  // --- ゲートシステム ---
   function updateGateVisibility() {
     const problems = document.querySelectorAll('.problem-container');
     let locked = false;
@@ -29,30 +27,23 @@ function initStudentSystem() {
     problems.forEach((problemEl, index) => {
       const container = problemEl as HTMLElement;
 
-      // すでにロックモードなら、この問題自体も隠す
       if (locked) {
         container.classList.add('is-locked');
         hideNextSiblings(container);
         return;
       }
 
-      // 正解済みかチェック
       const isSolved = progress.answers[index]?.isCorrect === true;
-
-      // この問題までは表示
       container.classList.remove('is-locked');
 
       if (!isSolved) {
-        // 未解決の場合: ロック有効化。この問題より「後ろ」の要素を全て隠す
         locked = true;
         hideNextSiblings(container);
       } else {
-        // 解決済みの場合: 次の要素を表示（次の問題の手前まで）
         showNextSiblings(container);
       }
     });
 
-    // 保存エリアの制御
     const saveArea = document.getElementById('save-area');
     if (saveArea) {
       if (locked) saveArea.classList.add('is-locked');
@@ -60,29 +51,73 @@ function initStudentSystem() {
     }
   }
   
-  // 要素より後ろにある兄弟要素をすべて隠す
   function hideNextSiblings(el: HTMLElement) {
     let next = el.nextElementSibling as HTMLElement;
     while (next) {
-      if (next.id !== 'save-area') next.classList.add('is-locked');
+      if (next.id !== 'save-area' && !next.classList.contains('app-footer')) {
+         next.classList.add('is-locked');
+      }
       next = next.nextElementSibling as HTMLElement;
     }
   }
 
-  // 要素より後ろにある兄弟要素を表示する（次の問題まで）
   function showNextSiblings(el: HTMLElement) {
     let next = el.nextElementSibling as HTMLElement;
     while (next) {
-      if (next.classList.contains('problem-container')) break; // 次の問題でストップ
-      if (next.id === 'save-area') break; // 保存エリアでストップ
+      if (next.classList.contains('problem-container')) break;
+      if (next.id === 'save-area') break;
+      if (next.classList.contains('app-footer')) break;
       next.classList.remove('is-locked');
       next = next.nextElementSibling as HTMLElement;
     }
   }
-  // 全ての問題コンテナを取得
-  // HTML生成時に class="problem-container" data-index="0" のように付与されている前提
-  const containers = document.querySelectorAll('.problem-container');
 
+  // --- ドロワー制御 (解答リスト) ---
+  const drawer = document.getElementById('answer-drawer');
+  const drawerToggle = document.getElementById('drawer-toggle');
+  const drawerList = document.getElementById('drawer-list');
+
+  // トグルボタン処理
+  if (drawer && drawerToggle) {
+      drawerToggle.addEventListener('click', () => {
+          drawer.classList.toggle('open');
+          // ボタンの文字を切り替え
+          drawerToggle.textContent = drawer.classList.contains('open') ? '▶ 閉じる' : '◀ 解答';
+      });
+  }
+
+  // 解答リストへの追加処理
+  function addAnswerToDrawer(index: number, answerText: string) {
+      if (!drawerList) return;
+
+      // 問題文の取得 (DOMから無理やり取得して表示用に整形)
+      // problem-container -> question-content 内のテキストを取得
+      const problems = document.querySelectorAll('.problem-container');
+      const targetContainer = problems[index];
+      let questionSnippet = `Q${index + 1}`;
+      
+      if (targetContainer) {
+          const qContent = targetContainer.querySelector('.question-content');
+          if (qContent && qContent.textContent) {
+              // 長すぎる場合は省略
+              questionSnippet = qContent.textContent.substring(0, 20) + (qContent.textContent.length > 20 ? '...' : '');
+          }
+      }
+
+      const item = document.createElement('div');
+      item.className = 'drawer-item';
+      item.innerHTML = `
+        <div class="drawer-item-q">${questionSnippet}</div>
+        <div class="drawer-item-a">${answerText}</div>
+      `;
+      drawerList.appendChild(item);
+
+      // 一番下にスクロール
+      drawerList.scrollTop = drawerList.scrollHeight;
+  }
+
+  // --- 問題ロジック ---
+  const containers = document.querySelectorAll('.problem-container');
   containers.forEach((container) => {
     const indexStr = container.getAttribute('data-index');
     if (indexStr === null) return;
@@ -98,49 +133,47 @@ function initStudentSystem() {
     btn.addEventListener('click', () => {
       const val = input.value.trim();
       const hash = simpleHash(val);
-      const isCorrect = (data.correctHashes.includes(hash));
+      
+      // indexOf を使用 (古いブラウザ互換)
+      const isCorrect = data.correctHashes.indexOf(hash) !== -1;
 
-      // 正誤判定
       if (isCorrect) {
         const ans = deobfuscateAnswer(data.encryptedText);
         msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
 
         input.disabled = true;
         btn.disabled = true;
+        
         progress.answers[index] = {
           userAnswer: val,
           isCorrect: true,
           timestamp: new Date().toISOString()
         };
+
+        // ★解答リストに追加 & 自動スクロール
+        addAnswerToDrawer(index, ans);
+
+        // ゲート更新
         updateGateVisibility();
         
       } else {
         msg.innerHTML = `<span style="color:red">不正解</span>`;
-        // 不正解も記録
         progress.answers[index] = {
             userAnswer: val,
             isCorrect: false,
             timestamp: new Date().toISOString()
         };
       }
-
-      // データ記録
-      progress.answers[index] = {
-        userAnswer: val,
-        isCorrect: isCorrect,
-        timestamp: new Date().toISOString()
-      };
     });
   });
 
-  // JSON保存機能
+  // --- JSON保存機能 ---
   const saveBtn = document.getElementById('save-btn');
   const idInput = document.getElementById('student-id') as HTMLInputElement;
   const nameInput = document.getElementById('student-name') as HTMLInputElement;
 
   if (saveBtn && idInput && nameInput) {
     saveBtn.addEventListener('click', () => {
-      // ユーザー情報の更新
       progress.studentId = idInput.value;
       progress.name = nameInput.value;
       progress.savedAt = new Date().toISOString();
@@ -150,20 +183,18 @@ function initStudentSystem() {
         return;
       }
 
-      // JSONファイル生成
       const jsonStr = JSON.stringify(progress, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       
-      // ダウンロード発火
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      // ファイル名: 学籍番号_氏名.json
       link.download = `${progress.studentId}_${progress.name}_progress.json`;
       link.click();
       URL.revokeObjectURL(link.href);
     });
   }
   
+  // 初期ロード時実行
   updateGateVisibility();
 }
 
