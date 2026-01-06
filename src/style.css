@@ -1,9 +1,5 @@
 /* ./src/style.css */
 
-* {
-    font: 100;
-}
-
 /* --- 基本レイアウト --- */
 body {
     font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
