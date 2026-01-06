@@ -1,6 +1,6 @@
 // ./src/app/parser.ts
 
-import { marked } from 'marked';
+import { marked, parseInline } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
 import type { MacroDef, ParseResult, ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
@@ -158,10 +158,10 @@ export function parseMarkdown(markdown: string): ParseResult {
         });
 
         // インライン処理
-        const bufferedText = processInlineCommands(problemBodyBuffer.join('\n'), macros, placeholders, () => placeholderCounter++);
-        const problemHtml = marked.parse(bufferedText, { async: false }) as string;
+        const problemHtml = marked.parse(problemBodyBuffer.join('\n'), { async: false }) as string;
+        const bufferedText = processInlineCommands(problemHtml, macros, placeholders, () => placeholderCounter++)
         
-        const htmlBlock = Problem(index, problemHtml);
+        const htmlBlock = Problem(index, bufferedText);
         const placeholder = `RNY_PROBLEM_BLOCK_${index}`;
         placeholders[placeholder] = htmlBlock;
         processedLines.push(placeholder);

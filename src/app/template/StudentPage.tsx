@@ -2,30 +2,16 @@
 
 import React from 'react';
 import type { ProblemProps } from '../../lib/core/type';
+import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../../lib/core/constant';
 
-export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, /*problemData,*/ scriptUrl }) => {
-  // const jsonString = JSON.stringify(problemData);
-  
-  // const errorHandlerScript = `
-  //     function showLoadError() {
-  //       var err = document.getElementById('loading-error');
-  //       if (err) err.style.display = 'block';
-  //     }
-  //     // 3秒経っても window.PROBLEM_DATA_LIST が処理されていない(viewerが走っていない)場合はエラーとみなす
-  //     setTimeout(function() {
-  //       if (!window.RNY_SYSTEM_LOADED) {
-  //         // viewer.ts側で読み込み成功時にこのフラグを立てるように修正が必要
-  //         // 今回は単純に script タグの onerror で制御する方式をメインにする
-  //       }
-  //     }, 3000);
-  //   `;
-
+export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl }) => {
+      
   return (
     <html lang="ja">
       <head>
         <meta charSet="UTF-8" />
         <title>授業資料</title>
-        <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.jsdelivr.net/gh/mysoshake/RNY-WhiteBoard2/src/style.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href={STUDENT_MAIN_REPOSITORY + STUDENT_STYLE_PATH} />
       </head>
       <body>
         {/* エラー表示エリア */}

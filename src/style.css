@@ -37,7 +37,7 @@ body {
 .result-msg { font-weight: bold; }
 
 /* --- 汎用ボックス --- */
-.box-common { padding: 15px; margin: 20px 0; border-radius: 6px; border-left: 6px solid; }
+.box-common { padding: 15px; margin: 20px 0; border-radius: 6px; border-left: 6px solid gray; }
 .box-common h3 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.1em; }
 .box-ex { background-color: #e1f5fe; border-color: #03a9f4; }
 .box-pr { background-color: #fffde7; border-color: #ffeb3b; }
