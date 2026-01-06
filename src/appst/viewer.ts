@@ -8,6 +8,7 @@ declare global {
   }
 }
 
+
 function initStudentSystem() {
   const quizList = window.QUIZ_DATA_LIST;
   if (!quizList) return;
@@ -19,7 +20,65 @@ function initStudentSystem() {
     answers: {},
     savedAt: ""
   };
+  
+  // ゲートシステム: 表示制御ロジック
+  function updateGateVisibility() {
+    const problems = document.querySelectorAll('.problem-container');
+    let locked = false;
 
+    problems.forEach((problemEl, index) => {
+      const container = problemEl as HTMLElement;
+
+      // すでにロックモードなら、この問題自体も隠す
+      if (locked) {
+        container.classList.add('is-locked');
+        hideNextSiblings(container);
+        return;
+      }
+
+      // 正解済みかチェック
+      const isSolved = progress.answers[index]?.isCorrect === true;
+
+      // この問題までは表示
+      container.classList.remove('is-locked');
+
+      if (!isSolved) {
+        // 未解決の場合: ロック有効化。この問題より「後ろ」の要素を全て隠す
+        locked = true;
+        hideNextSiblings(container);
+      } else {
+        // 解決済みの場合: 次の要素を表示（次の問題の手前まで）
+        showNextSiblings(container);
+      }
+    });
+
+    // 保存エリアの制御
+    const saveArea = document.getElementById('save-area');
+    if (saveArea) {
+      if (locked) saveArea.classList.add('is-locked');
+      else saveArea.classList.remove('is-locked');
+    }
+  }
+  
+  // 要素より後ろにある兄弟要素をすべて隠す
+  function hideNextSiblings(el: HTMLElement) {
+    let next = el.nextElementSibling as HTMLElement;
+    while (next) {
+      if (next.id !== 'save-area') next.classList.add('is-locked');
+      next = next.nextElementSibling as HTMLElement;
+    }
+  }
+
+  // 要素より後ろにある兄弟要素を表示する（次の問題まで）
+  function showNextSiblings(el: HTMLElement) {
+    let next = el.nextElementSibling as HTMLElement;
+    while (next) {
+      if (next.classList.contains('problem-container')) break; // 次の問題でストップ
+      if (next.id === 'save-area') break; // 保存エリアでストップ
+      next.classList.remove('is-locked');
+      next = next.nextElementSibling as HTMLElement;
+    }
+  }
   // 全ての問題コンテナを取得
   // HTML生成時に class="problem-container" data-index="0" のように付与されている前提
   const containers = document.querySelectorAll('.problem-container');
@@ -41,15 +100,28 @@ function initStudentSystem() {
       const hash = simpleHash(val);
       const isCorrect = (data.correctHashes.includes(hash));
 
-      // 結果表示
+      // 正誤判定
       if (isCorrect) {
         const ans = deobfuscateAnswer(data.encryptedText);
         msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
-        // 正解したら入力不可にするなどの制御も可能
+
         input.disabled = true;
         btn.disabled = true;
+        progress.answers[index] = {
+          userAnswer: val,
+          isCorrect: true,
+          timestamp: new Date().toISOString()
+        };
+        updateGateVisibility();
+        
       } else {
         msg.innerHTML = `<span style="color:red">不正解</span>`;
+        // 不正解も記録
+        progress.answers[index] = {
+            userAnswer: val,
+            isCorrect: false,
+            timestamp: new Date().toISOString()
+        };
       }
 
       // データ記録
@@ -61,7 +133,7 @@ function initStudentSystem() {
     });
   });
 
-  // --- JSON保存機能 ---
+  // JSON保存機能
   const saveBtn = document.getElementById('save-btn');
   const idInput = document.getElementById('student-id') as HTMLInputElement;
   const nameInput = document.getElementById('student-name') as HTMLInputElement;

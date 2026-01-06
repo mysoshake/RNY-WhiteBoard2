@@ -91,15 +91,33 @@ export function parseMarkdown(markdown: string): ParseResult {
       }
     }
 
-    // --- C. #ex (説明) ---
-    const exMatch = line.match(/^#ex\s+(.*)/);
-    if (exMatch) {
-      const title = exMatch[1];
-      const exHtml = `<div class="box-ex"><h3>${title}</h3></div>`;
-      processedLines.push(exHtml); 
-      continue;
-    }
+// --- C. ボックス記法 (#ex, #pr, #as, #eg) の処理 ---
+    
+    // 共通処理のための正規表現マップ
+    const boxTypes = [
+        { tag: '#ex', className: 'box-ex' }, // 説明 (水色)
+        { tag: '#pr', className: 'box-pr' }, // 練習 (黄色)
+        { tag: '#as', className: 'box-as' }, // 課題 (赤色)
+        { tag: '#eg', className: 'box-eg' }  // 例 (紫)
+    ];
 
+    let matchFound = false;
+    for (const box of boxTypes) {
+        // 行頭が "#tag " で始まるかチェック
+        const regex = new RegExp(`^${box.tag}\\s+(.*)`);
+        const match = line.match(regex);
+        if (match) {
+            const title = match[1];
+            // 共通クラス box-common と、色別のクラスを付与
+            const html = `<div class="box-common ${box.className}"><h3>${title}</h3></div>`;
+            processedLines.push(html);
+            matchFound = true;
+            break;
+        }
+    }
+    if (matchFound) continue;
+
+    // 通常行
     processedLines.push(line);
   }
 
