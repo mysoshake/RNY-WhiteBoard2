@@ -22,6 +22,13 @@ export interface ParseResult {
     problemData: ProblemItem[];
 }
 
+// マクロ定義用インターフェース
+export interface MacroDef {
+    name: string;      // コマンド名 (@cmd)
+    argCount: number;  // 引数の数
+    template: string;  // 変換後のテンプレート ($1 $2...)
+}
+
 // 記録用データ構造
 export interface StudentProgress {
   studentId: string;
