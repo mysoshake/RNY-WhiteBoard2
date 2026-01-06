@@ -1,15 +1,9 @@
 // ./src/app/template/StudentPage.tsx
 
 import React from 'react';
-import { QuizItem } from '../../lib/core/type';
+import type { ProblemProps } from '../../lib/core/type';
 
-interface Props {
-  contentHtml: string;
-  quizData: QuizItem[];
-  scriptUrl: string;
-}
-
-export const StudentPage: React.FC<Props> = ({ contentHtml, quizData, scriptUrl }) => {
+export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, quizData, scriptUrl }) => {
   const jsonString = JSON.stringify(quizData);
 
   return (
