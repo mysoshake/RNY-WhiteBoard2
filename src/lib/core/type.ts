@@ -33,5 +33,15 @@ export interface StudentProgress {
       timestamp: string;
     }
   };
+  logs: ActionLog[];
   savedAt: string;
 }
+
+// ログ単体の定義
+export interface ActionLog {
+    timestamp: string;
+    type: 'info' | 'answer' | 'system' | 'error';
+    message: string;
+    details?: any;
+}
+

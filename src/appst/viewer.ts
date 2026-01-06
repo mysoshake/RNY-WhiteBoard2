@@ -1,6 +1,6 @@
 // ./src/appst/viewer.ts
 import { simpleHash, deobfuscateAnswer } from "../lib/core/cryption";
-import type { ProblemItem, StudentProgress } from "../lib/core/type";
+import type { ProblemItem, StudentProgress, ActionLog } from "../lib/core/type";
 
 declare global {
   interface Window {
@@ -16,8 +16,27 @@ function initStudentSystem() {
     studentId: "",
     name: "",
     answers: {},
+    logs: [],
     savedAt: ""
   };
+  
+  // ログ用関数
+  function recordLog(type: ActionLog['type'], message: string, details?: any) {
+    const log: ActionLog = {
+        timestamp: new Date().toISOString(),
+        type,
+        message,
+        details
+    };
+    
+    // 内部データに保存
+    progress.logs.push(log);
+    
+    // 開発者ツール用にも出力
+    console.log(`[${log.timestamp}] [${type}] ${message}`, details || '');
+  }
+  
+  recordLog('system', 'System Initialized', { problemCount: problemList.length });
   
   // --- ゲートシステム ---
   function updateGateVisibility() {
@@ -79,11 +98,13 @@ function initStudentSystem() {
 
   // トグルボタン処理
   if (drawer && drawerToggle) {
-      drawerToggle.addEventListener('click', () => {
-          drawer.classList.toggle('open');
-          // ボタンの文字を切り替え
-          drawerToggle.textContent = drawer.classList.contains('open') ? '▶ 閉じる' : '◀ 解答';
-      });
+    drawerToggle.addEventListener('click', () => {
+      const willOpen = !drawer.classList.contains('open');
+      drawer.classList.toggle('open');
+      drawerToggle.textContent = willOpen ? '▶ 閉じる' : '◀ 解答';
+      
+      recordLog('info', `Drawer toggled: ${willOpen ? 'OPEN' : 'CLOSE'}`);
+    });
   }
 
   // 解答リストへの追加処理
@@ -133,10 +154,14 @@ function initStudentSystem() {
     btn.addEventListener('click', () => {
       const val = input.value.trim();
       const hash = simpleHash(val);
-      
       // indexOf を使用 (古いブラウザ互換)
       const isCorrect = data.correctHashes.indexOf(hash) !== -1;
-
+      
+      recordLog('answer', `Question ${index + 1} attempt`, { 
+          input: val, 
+          isCorrect 
+      });
+      
       if (isCorrect) {
         const ans = deobfuscateAnswer(data.encryptedText);
         msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
@@ -150,10 +175,7 @@ function initStudentSystem() {
           timestamp: new Date().toISOString()
         };
 
-        // ★解答リストに追加 & 自動スクロール
         addAnswerToDrawer(index, ans);
-
-        // ゲート更新
         updateGateVisibility();
         
       } else {
@@ -180,9 +202,11 @@ function initStudentSystem() {
 
       if (!progress.studentId || !progress.name) {
         alert("学籍番号と氏名を入力してください");
+        recordLog('error', 'Save attempt failed: Missing ID or Name');
         return;
       }
 
+      recordLog('system', 'Progress saved to JSON file');
       const jsonStr = JSON.stringify(progress, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       
