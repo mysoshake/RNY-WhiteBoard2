@@ -6,7 +6,7 @@ export interface QuizItem {
   encryptedText: string;
 }
 
-export interface BoxParser {
+export interface BoxParser { 
   prefix: string;
   parse: (line: string) => string;
 }

@@ -21,7 +21,7 @@ function generateStudentHTML(bodyContent: string, quizData: any[], scriptUrl: st
         .question-text { font-weight: bold; margin-top: 0; }
         .result-msg { margin-left: 10px; font-weight: bold; }
         
-        /* #ex (例・補足) のスタイル (簡易実装) */
+        /* #ex (説明) のスタイル */
         h3 { border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         
         /* 制御用エリア */
@@ -53,29 +53,7 @@ function generateStudentHTML(bodyContent: string, quizData: any[], scriptUrl: st
 }
 
 // 教員用画面UI
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div style="display: flex; height: 100vh; flex-direction: column;">
-    <header style="padding: 10px; background: #eee; border-bottom: 1px solid #ccc;">
-        <h1>授業資料作成ツール</h1>
-        <button id="tc-download">HTML出力</button>
-        <input type="text" id="tc-url" value="  " size="30" placeholder="JSファイルURL">
-    </header>
-    <div style="display: flex; flex: 1; overflow: hidden;">
-        <div style="flex: 1; display: flex; flex-direction: column; border-right: 1px solid #ccc;">
-            <div style="padding: 5px; background: #f9f9f9; font-size: 0.9em;">
-                Markdown入力 (#pb 問題 | 答え)
-            </div>
-            <textarea id="tc-input" style="flex: 1; padding: 10px; resize: none; border: none; outline: none;"></textarea>
-        </div>
-        <div style="flex: 1; display: flex; flex-direction: column; background: #fff;">
-             <div style="padding: 5px; background: #f9f9f9; font-size: 0.9em;">
-                プレビュー
-            </div>
-            <div id="tc-preview" style="flex: 1; padding: 20px; overflow-y: auto;"></div>
-        </div>
-    </div>
-  </div>
-`;
+// document.querySelector<HTMLDivElement>('#app')!.innerHTML = ``;
 
 // ロジック
 const inputArea = document.getElementById('tc-input') as HTMLTextAreaElement;
