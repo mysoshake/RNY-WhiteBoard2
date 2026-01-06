@@ -10,7 +10,7 @@ import Problem from './component/Problem';
  * 独自マークダウンを解析し、HTMLと問題データを生成する
  */
 export function parseMarkdown(markdown: string): ParseResult {
-  const quizData: ParseResult['quizData'] = [];
+  const problemData: ParseResult['problemData'] = [];
   const placeholders: { [key: string]: string } = {}; 
   let problemCounter = 0;
 
@@ -32,7 +32,7 @@ export function parseMarkdown(markdown: string): ParseResult {
         const index = problemCounter++;
         const answers = answerLine.split('|').map(a => a.trim()).filter(a => a);
         
-        quizData.push({
+        problemData.push({
             correctHashes: answers.map(a => simpleHash(a)),
             encryptedText: obfuscateAnswer(answers[0] || "")
         });
@@ -73,7 +73,7 @@ export function parseMarkdown(markdown: string): ParseResult {
         if (answers.length > 0) {
            const index = problemCounter++;
            
-           quizData.push({
+           problemData.push({
                correctHashes: answers.map(a => simpleHash(a)),
                encryptedText: obfuscateAnswer(answers[0])
            });
@@ -130,6 +130,6 @@ export function parseMarkdown(markdown: string): ParseResult {
 
   return {
     html: finalHtml,
-    quizData: quizData
+    problemData: problemData
   };
 }

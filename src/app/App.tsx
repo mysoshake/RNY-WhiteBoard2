@@ -33,13 +33,13 @@ const App: FunctionComponent = () => {
 
   // ダウンロード処理
   const handleDownload = () => {
-    const { html, quizData } = parseMarkdown(markdown);
+    const { html, problemData } = parseMarkdown(markdown);
     
     // Reactコンポーネントを静的なHTML文字列に変換
     const pageMarkup = renderToStaticMarkup(
       <StudentPage 
         contentHtml={html} 
-        quizData={quizData} 
+        problemData={problemData} 
         scriptUrl={scriptUrl} 
       />
     );

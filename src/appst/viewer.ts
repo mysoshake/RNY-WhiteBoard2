@@ -4,13 +4,13 @@ import type { ProblemItem, StudentProgress } from "../lib/core/type";
 
 declare global {
   interface Window {
-    QUIZ_DATA_LIST: ProblemItem[];
+    PROBLEM_DATA_LIST: ProblemItem[];
   }
 }
 
 function initStudentSystem() {
-  const quizList = window.QUIZ_DATA_LIST;
-  if (!quizList) return;
+  const problemList = window.PROBLEM_DATA_LIST;
+  if (!problemList) return;
 
   const progress: StudentProgress = {
     studentId: "",
@@ -122,7 +122,7 @@ function initStudentSystem() {
     const indexStr = container.getAttribute('data-index');
     if (indexStr === null) return;
     const index = parseInt(indexStr, 10);
-    const data = quizList[index];
+    const data = problemList[index];
 
     const input = container.querySelector('.student-input') as HTMLInputElement;
     const btn = container.querySelector('.check-btn') as HTMLButtonElement;

@@ -8,7 +8,7 @@ export interface ProblemItem {
 
 export interface ProblemProps {
   contentHtml: string;
-  quizData: ProblemItem[];
+  problemData: ProblemItem[];
   scriptUrl: string;
 }
 
@@ -19,7 +19,7 @@ export interface BoxParser {
 
 export interface ParseResult {
     html: string;
-    quizData: ProblemItem[];
+    problemData: ProblemItem[];
 }
 
 // 記録用データ構造
