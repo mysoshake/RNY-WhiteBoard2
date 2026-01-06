@@ -3,22 +3,22 @@
 import React from 'react';
 import type { ProblemProps } from '../../lib/core/type';
 
-export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl }) => {
-  const jsonString = JSON.stringify(problemData);
+export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, /*problemData,*/ scriptUrl }) => {
+  // const jsonString = JSON.stringify(problemData);
   
-  const errorHandlerScript = `
-      function showLoadError() {
-        var err = document.getElementById('loading-error');
-        if (err) err.style.display = 'block';
-      }
-      // 3秒経っても window.PROBLEM_DATA_LIST が処理されていない(viewerが走っていない)場合はエラーとみなす
-      setTimeout(function() {
-        if (!window.RNY_SYSTEM_LOADED) {
-          // viewer.ts側で読み込み成功時にこのフラグを立てるように修正が必要
-          // 今回は単純に script タグの onerror で制御する方式をメインにする
-        }
-      }, 3000);
-    `;
+  // const errorHandlerScript = `
+  //     function showLoadError() {
+  //       var err = document.getElementById('loading-error');
+  //       if (err) err.style.display = 'block';
+  //     }
+  //     // 3秒経っても window.PROBLEM_DATA_LIST が処理されていない(viewerが走っていない)場合はエラーとみなす
+  //     setTimeout(function() {
+  //       if (!window.RNY_SYSTEM_LOADED) {
+  //         // viewer.ts側で読み込み成功時にこのフラグを立てるように修正が必要
+  //         // 今回は単純に script タグの onerror で制御する方式をメインにする
+  //       }
+  //     }, 3000);
+  //   `;
 
   return (
     <html lang="ja">

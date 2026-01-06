@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from './parser';
-import { simpleHash, obfuscateAnswer, deobfuscateAnswer } from '../lib/core/cryption';
+import { simpleHash, deobfuscateAnswer } from '../lib/core/cryption';
 
 describe('Markdown Parser', () => {
 
