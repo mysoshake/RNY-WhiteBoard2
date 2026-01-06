@@ -11,7 +11,7 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
       <head>
         <meta charSet="UTF-8" />
         <title>授業資料</title>
-        <style  />
+        <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.jsdelivr.net/gh/mysoshake/RNY-WhiteBoard2@latest/src/style.css" />
       </head>
       <body>
         <div className="container" id="main-content">
@@ -40,7 +40,7 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
             </div>
         </div>
 
-        <script dangerouslySetInnerHTML={{ __html: `window.problem_DATA_LIST = ${jsonString};` }} />
+        <script dangerouslySetInnerHTML={{ __html: `window.PROBLEM_DATA_LIST = ${jsonString};` }} />
         <script src={scriptUrl} />
       </body>
     </html>

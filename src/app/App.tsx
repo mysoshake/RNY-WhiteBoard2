@@ -4,7 +4,7 @@ import React, { type FunctionComponent, useState, useEffect } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
-import './App.css'; // スタイルが必要なら別途作成、あるいはstyle.cssを利用
+import './App.css';
 import { STUDENT_MAIN_PATH } from '../lib/core/constant';
 
 // 最初の md テキスト

@@ -6,9 +6,7 @@ import type { ParseResult } from '../lib/core/type';
 // 追加: コンポーネント(関数)をインポート
 import Problem from './component/Problem';
 
-/**
- * 独自マークダウンを解析し、HTMLと問題データを生成する
- */
+// 独自マークダウンを解析し、HTMLと問題データを生成する
 export function parseMarkdown(markdown: string): ParseResult {
   const problemData: ParseResult['problemData'] = [];
   const placeholders: { [key: string]: string } = {}; 
@@ -42,7 +40,7 @@ export function parseMarkdown(markdown: string): ParseResult {
         // 変更: Problem関数を使用
         const htmlBlock = Problem(index, problemHtml);
         
-        const placeholder = `[[__PROBLEM_BLOCK_${index}__]]`;
+        const placeholder = `%%%%PROBLEM_BLOCK_${index}%%%%`;
         placeholders[placeholder] = htmlBlock;
         processedLines.push(placeholder);
 
@@ -83,7 +81,7 @@ export function parseMarkdown(markdown: string): ParseResult {
            // 変更: Problem関数を使用
            const htmlBlock = Problem(index, questionHtml);
 
-           const placeholder = `[[__PROBLEM_BLOCK_${index}__]]`;
+           const placeholder = `%%%%PROBLEM_BLOCK_${index}%%%%`;
            placeholders[placeholder] = htmlBlock;
            processedLines.push(placeholder);
            continue;
