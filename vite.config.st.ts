@@ -9,9 +9,9 @@ export default defineConfig({
         outDir: 'dist/student',
         emptyOutDir: true,
         lib: {
-            entry: resolve(__dirname, 'src/st/main.ts'),
-            name: 'StudentMain',
-            fileName: () => 'student-main.js',
+            entry: resolve(__dirname, 'src/st/viewer.ts'),
+            name: 'StudentViewer',
+            fileName: () => 'student-viewer.js',
             formats: ['iife'] // 即時実行関数 (レガシーブラウザ用)
         },
         minify: 'terser',

@@ -1,4 +1,4 @@
-// st/main.ts
+// st/viewer.ts
 import { simpleHash, deobfuscateAnswer } from "../core/cryption";
 import type { QuizItem, StudentProgress } from "../core/type";
 
