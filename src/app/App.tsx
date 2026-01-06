@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
 import './App.css'; // スタイルが必要なら別途作成、あるいはstyle.cssを利用
+import { STUDENT_MAIN_PATH } from '../lib/core/constant';
 
 // 最初の md テキスト
 const SAMPLE_TEXT = 
@@ -22,7 +23,7 @@ const SAMPLE_TEXT =
 const App: FunctionComponent = () => {
   const [markdown, setMarkdown] = useState(SAMPLE_TEXT);
   const [previewHtml, setPreviewHtml] = useState('');
-  const [scriptUrl, setScriptUrl] = useState(import.meta.env.VITE_STUDENT_MAIN_PATH || '');
+  const [scriptUrl, setScriptUrl] = useState(STUDENT_MAIN_PATH);
 
   // マークダウン入力時にプレビューを更新
   useEffect(() => {
