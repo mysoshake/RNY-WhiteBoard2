@@ -1,6 +1,6 @@
 // ./src/app/component/Problem.tsx
 
-const createProblemHTML = (index: number, contentHtml: string): string => {
+const Problem = (index: number, contentHtml: string): string => {
     return `<div class="problem-container" data-index="${index}">
               <div class="question-content">
                 ${contentHtml}
@@ -13,5 +13,4 @@ const createProblemHTML = (index: number, contentHtml: string): string => {
             </div>`;
 }
 
-// HTML生成用のヘルパー関数
-export default createProblemHTML;
+export default Problem;

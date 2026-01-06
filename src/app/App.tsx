@@ -1,6 +1,6 @@
 // ./src/app/App.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { type FunctionComponent, useState, useEffect } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
@@ -19,10 +19,10 @@ const SAMPLE_TEXT =
 #pb 10 + 20 は？ | 30
 `;
 
-const App: React.FC = () => {
+const App: FunctionComponent = () => {
   const [markdown, setMarkdown] = useState(SAMPLE_TEXT);
   const [previewHtml, setPreviewHtml] = useState('');
-  const [scriptUrl, setScriptUrl] = useState('student-main.js'); // 初期値は相対パスにしておくとテストしやすい
+  const [scriptUrl, setScriptUrl] = useState(import.meta.env.VITE_STUDENT_MAIN_PATH || '');
 
   // マークダウン入力時にプレビューを更新
   useEffect(() => {

@@ -2,7 +2,6 @@
 import { simpleHash, deobfuscateAnswer } from "../lib/core/cryption";
 import type { ProblemItem, StudentProgress } from "../lib/core/type";
 
-
 declare global {
   interface Window {
     QUIZ_DATA_LIST: ProblemItem[];

@@ -2,84 +2,116 @@
 
 import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
-import type { ParseResult, BoxParser } from '../lib/core/type';
+import type { ParseResult } from '../lib/core/type';
+// 追加: コンポーネント(関数)をインポート
+import Problem from './component/Problem';
 
-
-// 独自マークダウンを解析し、HTMLと問題データを生成する
+/**
+ * 独自マークダウンを解析し、HTMLと問題データを生成する
+ */
 export function parseMarkdown(markdown: string): ParseResult {
   const quizData: ParseResult['quizData'] = [];
+  const placeholders: { [key: string]: string } = {}; 
   let problemCounter = 0;
-  
-  const boxParsers: BoxParser[] = 
-  [
-    {
-      prefix: "#ex", // 説明ボックス
-      parse: (content: string) => {
-        return (
-          `<div class="box-ex">
-            <h3>${content}</h3>
-          </div>`);
-      }
-    },
-    {
-      prefix: "#pb", // 問題ボックス
-      parse: (content: string) => {
-        // #pb 問題文 | 正解1 | 正解2 | ...
-        const separatorIndex = content.indexOf('|');
-        if (separatorIndex === -1) return `エラー ${content}`;
-        
-        const questionText = content.substring(0, separatorIndex).trim();
-        const answersPart = content.substring(separatorIndex + 1);
-        
-        // 解答パートをさらにパイプで分割して配列にする
-        const answers = answersPart.split('|').map(a => a.trim()).filter(a => a.length > 0);
-        
-        if (answers.length > 0) {
-            const index = problemCounter++;
 
-            // データの保存
-            quizData.push({
-                // 全ての別解をハッシュ化して配列に保存
-                correctHashes: answers.map(ans => simpleHash(ans)),
-                // 最初の答えを表示用として難読化保存
-                encryptedText: obfuscateAnswer(answers[0])
-            });
-
-            // HTML生成
-            return `<div class="problem-container" data-index="${index}">
-                      <p class="question-text">Q${index + 1}. ${questionText}</p>
-                      <div class="input-area">
-                        <input type="text" class="student-input" placeholder="回答を入力">
-                        <button class="check-btn">判定</button>
-                        <span class="result-msg"></span>
-                      </div>
-                    </div>`;
-        }
-        return `エラー ${content}`;
-      }
-    },
-  ];
-  
-  // 1. 独自記法 (#pb, #ex) のプリプロセス
-  // 行ごとに処理して、標準Markdownで処理できる形、またはHTMLプレースホルダーに置換する
   const lines = markdown.split('\n');
-  const processedLines = lines.map(line => {
-    for (const parser of boxParsers) {
-      if (line.startsWith(parser.prefix)) {
-        // 最初の '#pb 'を削る
-        const content = line.substring(parser.prefix.length + 1);
-        return parser.parse(content);
+  const processedLines: string[] = [];
+  
+  let inProblemBlock = false;
+  let problemBodyBuffer: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // --- A. 複数行ブロックモード ---
+    if (inProblemBlock) {
+      if (line.trim() === '---') {
+        const answerLine = lines[i + 1] || "";
+        i++; 
+
+        const index = problemCounter++;
+        const answers = answerLine.split('|').map(a => a.trim()).filter(a => a);
+        
+        quizData.push({
+            correctHashes: answers.map(a => simpleHash(a)),
+            encryptedText: obfuscateAnswer(answers[0] || "")
+        });
+
+        const problemHtml = marked.parse(problemBodyBuffer.join('\n'), { async: false }) as string;
+
+        // 変更: Problem関数を使用
+        const htmlBlock = Problem(index, problemHtml);
+        
+        const placeholder = `[[__PROBLEM_BLOCK_${index}__]]`;
+        placeholders[placeholder] = htmlBlock;
+        processedLines.push(placeholder);
+
+        inProblemBlock = false;
+        problemBodyBuffer = [];
+      } else {
+        problemBodyBuffer.push(line);
       }
-      // その他の場合はそのまま
-      return line;
+      continue;
     }
+
+    // --- B. 新しいブロックの開始 ---
+    if (line.trim() === '#pb') {
+      inProblemBlock = true;
+      problemBodyBuffer = [];
+      continue;
+    }
+
+    if (line.startsWith('#pb ')) {
+      const content = line.substring(4);
+      const separatorIndex = content.indexOf('|');
+
+      if (separatorIndex !== -1) {
+        const questionMarkdown = content.substring(0, separatorIndex).trim();
+        const answersPart = content.substring(separatorIndex + 1);
+        const answers = answersPart.split('|').map(a => a.trim()).filter(a => a);
+
+        if (answers.length > 0) {
+           const index = problemCounter++;
+           
+           quizData.push({
+               correctHashes: answers.map(a => simpleHash(a)),
+               encryptedText: obfuscateAnswer(answers[0])
+           });
+
+           const questionHtml = marked.parse(questionMarkdown, { async: false }) as string;
+           
+           // 変更: Problem関数を使用
+           const htmlBlock = Problem(index, questionHtml);
+
+           const placeholder = `[[__PROBLEM_BLOCK_${index}__]]`;
+           placeholders[placeholder] = htmlBlock;
+           processedLines.push(placeholder);
+           continue;
+        }
+      }
+    }
+
+    // --- C. #ex (説明) ---
+    const exMatch = line.match(/^#ex\s+(.*)/);
+    if (exMatch) {
+      const title = exMatch[1];
+      const exHtml = `<div class="box-ex"><h3>${title}</h3></div>`;
+      processedLines.push(exHtml); 
+      continue;
+    }
+
+    processedLines.push(line);
+  }
+
+  let finalHtml = marked.parse(processedLines.join('\n'), { async: false }) as string;
+
+  Object.keys(placeholders).forEach(key => {
+    finalHtml = finalHtml.replace(key, placeholders[key]);
+    finalHtml = finalHtml.replace(`<p>${key}</p>`, placeholders[key]); 
   });
 
-  // 2. 標準Markdownの変換
-  // marked は非同期の可能性もあるが基本は同期。型定義に従い同期的に使用。
-  const rawHtml = marked.parse(processedLines.join('\n'), { async: false }) as string;
-  return ({
-    html: rawHtml,
+  return {
+    html: finalHtml,
     quizData: quizData
-  });
+  };
 }
