@@ -1,9 +1,15 @@
 // core/type.ts
 
 // 拡張されたデータ定義
-export interface QuizItem {
+export interface ProblemItem {
   correctHashes: string[];
   encryptedText: string;
+}
+
+export interface ProblemProps {
+  contentHtml: string;
+  quizData: ProblemItem[];
+  scriptUrl: string;
 }
 
 export interface BoxParser { 
@@ -13,7 +19,7 @@ export interface BoxParser {
 
 export interface ParseResult {
     html: string;
-    quizData: QuizItem[];
+    quizData: ProblemItem[];
 }
 
 // 記録用データ構造
@@ -28,10 +34,4 @@ export interface StudentProgress {
     }
   };
   savedAt: string;
-}
-
-interface ProblemProps {
-  contentHtml: string;
-  quizData: QuizItem[];
-  scriptUrl: string;
 }
