@@ -2,13 +2,13 @@
 
 // 拡張されたデータ定義
 export interface QuizItem {
-  correctHash: string[];
+  correctHashes: string[];
   encryptedText: string;
 }
 
 export interface BoxParser { 
   prefix: string;
-  parse: (line: string) => string;
+  parse: (content: string) => string;
 }
 
 export interface ParseResult {
