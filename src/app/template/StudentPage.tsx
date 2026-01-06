@@ -5,13 +5,46 @@ import type { ProblemProps } from '../../lib/core/type';
 import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../../lib/core/constant';
 
 export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl }) => {
-      
+  const jsonString = JSON.stringify(problemData);
+  const criticalStyles = `
+    #loading-error {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.98);
+        z-index: 9999;
+        text-align: center;
+        padding-top: 100px;
+        color: #d32f2f;
+        font-family: sans-serif;
+    }
+    #loading-error h2 { font-size: 2rem; margin-bottom: 20px; }
+    #loading-error p { font-size: 1.2rem; margin: 10px 0; }
+  `;
+  
   return (
     <html lang="ja">
       <head>
         <meta charSet="UTF-8" />
         <title>授業資料</title>
-        <link rel="stylesheet" type="text/css" media="screen" href={STUDENT_MAIN_REPOSITORY + STUDENT_STYLE_PATH} />
+        <style dangerouslySetInnerHTML={{ __html: criticalStyles }} />
+        <link
+          rel="stylesheet"
+          type="text/css"
+          media="screen"
+          href={STUDENT_MAIN_REPOSITORY + STUDENT_STYLE_PATH}
+          onError={() => {
+            console.error('スタイルシートの読み込みに失敗しました');
+            const loaderror = document.getElementById('loading-error');
+            const msg = document.getElementById('error-msg');
+            if (loaderror !== null) {
+              loaderror.style.display='block';
+            }
+            if (msg !== null) {
+              msg.innerText='スタイルシートの読み込みに失敗しました';
+            }
+          }}
+        />
       </head>
       <body>
         {/* エラー表示エリア */}
@@ -45,6 +78,10 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
                 {/* ここに正解が追加されていく */}
             </div>
         </div>
+        
+        {/* 【復活】データ埋め込みスクリプト (これがないと動きません) */}
+        <script dangerouslySetInnerHTML={{ __html: `window.PROBLEM_DATA_LIST = ${jsonString};` }} />
+        
         {/* メインスクリプト読み込み (エラーハンドリング付き) */}
         {/* ReactのonErrorはDOM属性として出力されないことがあるため、dangerouslySetInnerHTMLでscriptタグを直接書くのが確実です */}
         <div dangerouslySetInnerHTML={{ __html: `
