@@ -29,3 +29,9 @@ export interface StudentProgress {
   };
   savedAt: string;
 }
+
+interface ProblemProps {
+  contentHtml: string;
+  quizData: QuizItem[];
+  scriptUrl: string;
+}
