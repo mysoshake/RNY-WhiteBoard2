@@ -11,7 +11,7 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
       <head>
         <meta charSet="UTF-8" />
         <title>授業資料</title>
-        <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.jsdelivr.net/gh/mysoshake/RNY-WhiteBoard2@latest/src/style.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.jsdelivr.net/gh/mysoshake/RNY-WhiteBoard2@e60e7f25b6bee51bb13a868ff78f856a2877dc80/src/style.css" />
       </head>
       <body>
         <div className="container" id="main-content">

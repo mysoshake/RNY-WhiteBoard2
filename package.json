@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite -c vite.config.tc.ts",
+    "dev": "npm run build:student && vite -c vite.config.tc.ts",
     "build:teacher": "tsc && vite build -c vite.config.tc.ts",
     "build:student": "tsc && vite build -c vite.config.st.ts",
     "build:all": "npm run build:teacher && npm run build:student",
