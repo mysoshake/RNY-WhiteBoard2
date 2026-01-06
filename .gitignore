@@ -28,3 +28,5 @@ package-lock.json
 *.note.*
 *.local.*
 *.env.*
+*Local*
+*.hintrc
