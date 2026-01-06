@@ -1,11 +1,11 @@
-// st/viewer.ts
-import { simpleHash, deobfuscateAnswer } from "../core/cryption";
-import type { QuizItem, StudentProgress } from "../core/type";
+// ./src/appst/viewer.ts
+import { simpleHash, deobfuscateAnswer } from "../lib/core/cryption";
+import type { ProblemItem, StudentProgress } from "../lib/core/type";
 
 
 declare global {
   interface Window {
-    QUIZ_DATA_LIST: QuizItem[];
+    QUIZ_DATA_LIST: ProblemItem[];
   }
 }
 
@@ -40,7 +40,7 @@ function initStudentSystem() {
     btn.addEventListener('click', () => {
       const val = input.value.trim();
       const hash = simpleHash(val);
-      const isCorrect = (hash === data.correctHash);
+      const isCorrect = (data.correctHashes.includes(hash));
 
       // 結果表示
       if (isCorrect) {

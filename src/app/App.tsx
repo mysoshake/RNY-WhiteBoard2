@@ -1,13 +1,14 @@
-// tc/App.tsx
+// ./src/app/App.tsx
 
 import React, { useState, useEffect } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
-import { StudentPage } from '../template/StudentPage';
+import { StudentPage } from './template/StudentPage';
 import './App.css'; // スタイルが必要なら別途作成、あるいはstyle.cssを利用
 
-// 初期テキスト
-const INITIAL_TEXT = `# 第1回 イントロダクション
+// 最初の md テキスト
+const SAMPLE_TEXT = 
+`# 第1回 イントロダクション
 
 ようこそ。
 
@@ -18,8 +19,8 @@ const INITIAL_TEXT = `# 第1回 イントロダクション
 #pb 10 + 20 は？ | 30
 `;
 
-export const App: React.FC = () => {
-  const [markdown, setMarkdown] = useState(INITIAL_TEXT);
+const App: React.FC = () => {
+  const [markdown, setMarkdown] = useState(SAMPLE_TEXT);
   const [previewHtml, setPreviewHtml] = useState('');
   const [scriptUrl, setScriptUrl] = useState('student-main.js'); // 初期値は相対パスにしておくとテストしやすい
 
@@ -72,6 +73,7 @@ export const App: React.FC = () => {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid #ccc' }}>
           <div style={{ padding: '5px', background: '#f9f9f9', fontSize: '0.9em' }}>Markdown入力</div>
           <textarea
+            title="Input Area"
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
             style={{ flex: 1, padding: '10px', resize: 'none', border: 'none', outline: 'none', fontSize:'16px' }}
@@ -90,3 +92,5 @@ export const App: React.FC = () => {
     </div>
   );
 };
+
+export default App;

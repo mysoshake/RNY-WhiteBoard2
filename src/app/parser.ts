@@ -1,8 +1,8 @@
-// tc/parser.ts
+// ./src/app/parser.ts
 
 import { marked } from 'marked';
-import { simpleHash, obfuscateAnswer } from '../core/cryption';
-import type { ParseResult, BoxParser } from '../core/type';
+import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
+import type { ParseResult, BoxParser } from '../lib/core/type';
 
 
 // 独自マークダウンを解析し、HTMLと問題データを生成する
@@ -55,6 +55,7 @@ export function parseMarkdown(markdown: string): ParseResult {
                       </div>
                     </div>`;
         }
+        return `エラー ${content}`;
       }
     },
   ];

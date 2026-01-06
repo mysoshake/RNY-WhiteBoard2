@@ -1,4 +1,4 @@
-// component/Problem.tsx
+// ./src/app/component/Problem.tsx
 
 const createProblemHTML = (index: number, contentHtml: string): string => {
     return `<div class="problem-container" data-index="${index}">

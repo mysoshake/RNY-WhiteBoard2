@@ -1,7 +1,7 @@
-// template/StudentPage.tsx
+// ./src/app/template/StudentPage.tsx
 
 import React from 'react';
-import type { ProblemProps } from '../core/type';
+import type { ProblemProps } from '../../lib/core/type';
 
 
 export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, quizData, scriptUrl }) => {
