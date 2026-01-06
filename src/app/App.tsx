@@ -56,36 +56,44 @@ const App: FunctionComponent = () => {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
-      <header style={{ padding: '10px', background: '#eee', borderBottom: '1px solid #ccc', display:'flex', gap:'10px', alignItems:'center' }}>
-        <h1 style={{margin:0, fontSize:'1.2rem', marginRight:'auto'}}>授業資料作成ツール</h1>
-        <input 
-          type="text" 
-          value={scriptUrl} 
-          onChange={(e) => setScriptUrl(e.target.value)}
-          placeholder="JSファイルURL"
-          style={{width: '300px'}}
-        />
-        <button onClick={handleDownload} style={{padding:'5px 15px', cursor:'pointer'}}>HTML出力</button>
+    <div className="app-container">
+      <header className="app-header">
+        <h1>授業資料作成ツール</h1>
+        <div>
+          JSファイル パス: 
+          <input 
+            className="input-js-file-url"
+            type="text" 
+            value={scriptUrl} 
+            onChange={(e) => setScriptUrl(e.target.value)}
+            placeholder="JSファイルURL"
+          />
+        </div>
+        <button
+          className="button-std"
+          onClick={handleDownload}
+        >
+          HTML出力
+        </button>
       </header>
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="markdown-container">
         {/* 入力エリア */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid #ccc' }}>
-          <div style={{ padding: '5px', background: '#f9f9f9', fontSize: '0.9em' }}>Markdown入力</div>
+        <div className="markdown-editor">
+          <div className="markdown-preview-text-header">Markdown入力</div>
           <textarea
+            className="markdown-editor-text"
             title="Input Area"
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
-            style={{ flex: 1, padding: '10px', resize: 'none', border: 'none', outline: 'none', fontSize:'16px' }}
           />
         </div>
 
         {/* プレビューエリア */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fff' }}>
-          <div style={{ padding: '5px', background: '#f9f9f9', fontSize: '0.9em' }}>プレビュー</div>
-          <div 
-            style={{ flex: 1, padding: '20px', overflowY: 'auto' }}
+        <div className="markdown-preview">
+          <div className="markdown-preview-text-header">プレビュー</div>
+          <div
+            className="markdown-preview-text"
             dangerouslySetInnerHTML={{ __html: previewHtml }} 
           />
         </div>
