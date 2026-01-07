@@ -4,7 +4,7 @@ import '../style.css';
 
 
 const Essay = (index: number, contentHtml: string): React.ReactElement => {
-    return (
+    return ( 
       <div
         className="problem-container essay-container"
         data-index={index}
