@@ -3,7 +3,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/RNY-Whiteboard2/',
+  base: '/RNY-WhiteBoard2/',
   // 開発サーバーの設定
   server: {
     open: true, // 自動でブラウザを開く
