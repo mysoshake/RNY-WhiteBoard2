@@ -12,6 +12,8 @@ function initStudentSystem() {
   const problemList = window.PROBLEM_DATA_LIST;
   if (!problemList) return;
 
+  const STORAGE_KEY_PREFIX_PROGRESS = 'rny_student_progress_';
+
   const progress: StudentProgress = {
     studentId: "",
     name: "",
@@ -31,11 +33,21 @@ function initStudentSystem() {
     
     // 内部データに保存
     progress.logs.push(log);
+    saveToStorage();
     
     // 開発者ツール用にも出力
     console.log(`[${log.timestamp}] [${type}] ${message}`, details || '');
   }
   
+  // --- ストレージ保存 ---
+  function saveToStorage(storageId: string = "") {
+    try {
+        localStorage.setItem(STORAGE_KEY_PREFIX_PROGRESS + storageId, JSON.stringify(progress));
+    } catch (e) {
+        console.warn("LocalStorage save failed", e);
+    }
+  }
+    
   recordLog('system', 'System Initialized', { problemCount: problemList.length });
   
   // --- ゲートシステム ---
@@ -114,30 +126,31 @@ function initStudentSystem() {
   // 解答リストへの追加処理
   function addAnswerToDrawer(index: number, answerText: string) {
       if (!drawerList) return;
-
+      // 重複チェック
+      if (document.getElementById(`log-ans-${index}`)) return;
+      
       // 問題文の取得 (DOMから無理やり取得して表示用に整形)
       // problem-container -> question-content 内のテキストを取得
       const problems = document.querySelectorAll('.problem-container');
       const targetContainer = problems[index];
-      let questionSnippet = `Q${index + 1}`;
+      let questionSnippet = `Q:${index + 1}`;
       if (targetContainer) {
           const qContent = targetContainer.querySelector('.question-content');
           if (qContent && qContent.textContent) {
               // 長すぎる場合は省略
-              questionSnippet = qContent.textContent.substring(0, 20) + (qContent.textContent.length > 20 ? '...' : '');
+              questionSnippet = qContent.textContent.substring(0, 40) + (qContent.textContent.length > 40 ? '...' : '');
           }
       }
 
-      const item = document.createElement('div');
-      item.className = 'drawer-item';
-      item.innerHTML = `
-        <div class="drawer-item-q">${questionSnippet}</div>
-        <div class="drawer-item-a">${answerText}</div>
-      `;
-      drawerList.appendChild(item);
-
-      // 一番下にスクロール
-      drawerList.scrollTop = drawerList.scrollHeight;
+    const item = document.createElement('div');
+    item.className = 'drawer-item';
+    item.id = `log-ans-${index}`; // IDを付与して重複防止
+    item.innerHTML = `
+      <div class="drawer-item-q">${questionSnippet}</div>
+      <div class="drawer-item-a">${answerText}</div>
+    `;
+    drawerList.appendChild(item);
+    drawerList.scrollTop = drawerList.scrollHeight;
   }
 
   // --- 問題ロジック ---
@@ -154,73 +167,71 @@ function initStudentSystem() {
     const btn = container.querySelector('.check-btn') as HTMLButtonElement;
     const msg = container.querySelector('.result-msg') as HTMLSpanElement;
 
-    if (!input || !btn || !msg || !type) return;
-
-    btn.addEventListener('click', () => {
-      const val = input.value.trim();
-      const hash = simpleHash(val);
-      // indexOf を使用 (古いブラウザ互換)
-      const isCorrect = data.correctHashes.indexOf(hash) !== -1;
-
-      // --- Essay (感想・考察) の場合 ---
+    if (!input || !btn || !msg) return;
+    
+    
+    
+  // 回答処理
+  const handleAnswer = (val: string, isRestoreMode = false) => {
       if (type === 'essay') {
-          if (val.length === 0) {
-              alert("内容を入力してください");
-              return;
-          }
-
-          msg.innerHTML = `<span style="color:green">記録しました</span>`;
-          input.disabled = true;
-          btn.disabled = true;
-          btn.textContent = "記録済み";
-
-          // ログ: エッセイ記録
-          recordLog('answer', `Essay ${index + 1} submitted`, { input: val });
-
-          // データ記録 (正解扱いで保存)
-          progress.answers[index] = {
-              userAnswer: val,
-              isCorrect: true, // 完了フラグとしてtrueを使う
-              timestamp: new Date().toISOString()
-          };
-
-          // ドロワーには「(記述済み)」と表示するか、内容の一部を表示
-          addAnswerToDrawer(index, "(記述済み)");
-          
-          updateGateVisibility();
+        if (!isRestoreMode && val.length === 0) {
+          alert("内容を入力してください");
           return;
+        }
+        msg.innerHTML = `<span style="color:green">記録しました</span>`;
+        input.disabled = true;
+        btn.disabled = true;
+        btn.textContent = "記録済み";
+
+        if (!isRestoreMode) {
+          progress.answers[index] = {
+            userAnswer: val,
+            isCorrect: true,
+            timestamp: new Date().toISOString()
+          };
+          recordLog('answer', `Essay ${index + 1} submitted`);
+          addAnswerToDrawer(index, "(記述済み)");
+          updateGateVisibility();
+          saveToStorage();
+        }
+        return;
       }
 
-      
-      recordLog('answer', `Question ${index + 1} attempt`, { 
-          input: val, 
-          isCorrect 
-      });
-      
+      // Quiz
+      const hash = simpleHash(val);
+      const isCorrect = data.correctHashes.indexOf(hash) !== -1;
+
+      if (!isRestoreMode) {
+          recordLog('answer', `Question ${index + 1} attempt`, { isCorrect });
+      }
+
       if (isCorrect) {
         const ans = deobfuscateAnswer(data.encryptedText);
         msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
-
         input.disabled = true;
         btn.disabled = true;
         
-        progress.answers[index] = {
-          userAnswer: val,
-          isCorrect: true,
-          timestamp: new Date().toISOString()
-        };
-
-        addAnswerToDrawer(index, ans);
-        updateGateVisibility();
-        
+        if (!isRestoreMode) {
+          progress.answers[index] = {
+            userAnswer: val,
+            isCorrect: true,
+            timestamp: new Date().toISOString()
+          };
+          addAnswerToDrawer(index, ans);
+          updateGateVisibility();
+          saveToStorage();
+        }
       } else {
         msg.innerHTML = `<span style="color:red">不正解</span>`;
-        progress.answers[index] = {
-            userAnswer: val,
-            isCorrect: false,
-            timestamp: new Date().toISOString()
-        };
+        if (!isRestoreMode) {
+          progress.answers[index] = { userAnswer: val, isCorrect: false, timestamp: new Date().toISOString() };
+          saveToStorage();
+        }
       }
+    };
+
+    btn.addEventListener('click', () => {
+      handleAnswer(input.value.trim());
     });
   });
 
@@ -253,8 +264,75 @@ function initStudentSystem() {
     });
   }
   
-  // 初期ロード時実行
+// --- 復元処理 (Restore) ---
+  function restoreProgress(storageId: string = "") {
+    const saved = localStorage.getItem(STORAGE_KEY_PREFIX_PROGRESS + storageId);
+    if (!saved) return;
+
+    try {
+      const savedData = JSON.parse(saved) as StudentProgress;
+      
+      // ID, Name復元
+      progress.studentId = savedData.studentId || "";
+      progress.name = savedData.name || "";
+      if (idInput) idInput.value = progress.studentId;
+      if (nameInput) nameInput.value = progress.name;
+
+      // Logs復元
+      if (Array.isArray(savedData.logs)) {
+        progress.logs = savedData.logs;
+      }
+
+      // 回答状況の復元
+      if (savedData.answers) {
+        progress.answers = savedData.answers;
+      
+        Object.keys(savedData.answers).forEach((key) => {
+          const idx = parseInt(key, 10);
+          const ansData = savedData.answers[idx];
+          if (!ansData || !ansData.isCorrect) return; // 正解のみUI復元
+
+          // UI操作
+          const container = document.querySelector(`.problem-container[data-index="${idx}"]`);
+          if (container) {
+            const input = container.querySelector('.essay-input-text, .essay-container') as HTMLInputElement;
+            const btn = container.querySelector('.check-btn') as HTMLButtonElement;
+            const msg = container.querySelector('.result-msg') as HTMLSpanElement;
+            const type = container.getAttribute('data-type') || 'quiz';
+            const problemData = problemList[idx];
+
+            if (input && btn && msg) {
+              input.value = ansData.userAnswer;
+              input.disabled = true;
+              btn.disabled = true;
+              
+              console.log("btn clicked");
+              
+              if (type === 'essay') {
+                msg.innerHTML = `<span style="color:green">記録しました</span>`;
+                btn.textContent = "記録済み";
+                addAnswerToDrawer(idx, "(記述済み)");
+              } else if (type === 'quiz') {
+                const ansText = deobfuscateAnswer(problemData.encryptedText);
+                msg.innerHTML = `<span style="color:blue">正解! (${ansText})</span>`;
+                addAnswerToDrawer(idx, ansText);
+              }
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Restore failed", e);
+    }
+  }
+
+  // 1. 復元
+  restoreProgress();
+  // 2. ゲート更新 (復元された状態に基づいて開閉)
   updateGateVisibility();
+  
+  // システムログ
+  recordLog('system', 'System Loaded/Restored');
 }
 
 document.addEventListener('DOMContentLoaded', initStudentSystem);

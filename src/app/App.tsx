@@ -10,6 +10,8 @@ import { MarkdownEditor } from './component/MarkdownEditor';
 
 import studentCssString from '../style.css?inline';
 
+const STORAGE_KEY_DRAFT_ID = 'rny_teacher_draft';
+
 // 最初の md テキスト
 const SAMPLE_TEXT = 
 `# 第1回 イントロダクション
@@ -92,27 +94,48 @@ usertext = int(input("text"))
 `;
 
 const App: FunctionComponent = () => {
-  const [markdown, setMarkdown] = useState(SAMPLE_TEXT);
+  // 初期化時にLocalStorageから読み込む
+  const [markdown, setMarkdown] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_DRAFT_ID);
+    return saved !== null ? saved : SAMPLE_TEXT;
+  });
   const [previewHtml, setPreviewHtml] = useState('');
   const [scriptUrl, setScriptUrl] = useState(STUDENT_MAIN_REPOSITORY + STUDENT_MAIN_PATH);
 
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // マークダウン入力時にプレビューを更新
+  // マークダウン入力時にプレビューを更新しつつ自動保存
   useEffect(() => {
     const { html } = parseMarkdown(markdown);
     setPreviewHtml(html);
+    localStorage.setItem(STORAGE_KEY_DRAFT_ID, markdown);
   }, [markdown]);
 
   // previewHtmlが変わるたびにMathJaxを更新
   useEffect(() => {
-    if (previewRef.current && window.MathJax) {
-      window.MathJax
-        .typesetPromise([previewRef.current])
-        .catch((err) => {
-          console.error(err)
-        });
-    }
+    const renderMath = () => {
+      if (previewRef.current && window.MathJax) {
+        // まだライブラリ本体がロードされていない(configオブジェクトだけの)場合は待つ
+        if (!window.MathJax.typesetPromise) {
+          setTimeout(renderMath, 200); // 0.2秒後に再トライ
+          return;
+        }
+
+        // レンダリング実行
+        window.MathJax.typesetPromise([previewRef.current])
+          .then(() => {
+            // 成功
+          })
+          .catch((err) => {
+            // レンダリング中の再呼び出しエラーなどは無視してOK
+            console.warn('MathJax typesetting failed:', err);
+            // 失敗した場合も少し待ってリトライさせると安定する場合がある
+            setTimeout(renderMath, 500); 
+          });
+      }
+    };
+
+    renderMath();
   }, [previewHtml]);
   
   // ダウンロード処理
@@ -170,7 +193,7 @@ const App: FunctionComponent = () => {
         {/* エディタエリア */}
         <div className="markdown-editor">
           <div className="markdown-editor-text-header">Markdown入力</div>
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+          <div className="markdown-editor-wrapper">
             <MarkdownEditor 
               value={markdown} 
               onChange={setMarkdown} 
@@ -186,7 +209,7 @@ const App: FunctionComponent = () => {
             >
               <div
                 className="container-prev"
-                // style={{ minHeight: 'auto', boxShadow: 'none', margin: '0' }}
+                ref={previewRef}
                 dangerouslySetInnerHTML={{ __html: previewHtml }} 
               />
             </div>

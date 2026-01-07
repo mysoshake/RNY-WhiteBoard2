@@ -13,6 +13,13 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
         inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], // $...$ をインライン数式として認識させる
         displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
       },
+      options: {
+        menuOptions: {
+          settings: {
+            assistiveMml: false
+          }
+        }
+      },
       svg: {
         fontCache: 'global'
       }

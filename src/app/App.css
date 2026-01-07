@@ -1,4 +1,4 @@
-これはコメント
+/* ./src/app/App.css */
 
 .app-container {
     display: flex;
@@ -55,6 +55,11 @@ h1 {
     font-size: large;
 }
 
+.markdown-editor-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
 .markdown-editor-text {
     flex: 1;
     padding: 10px;
