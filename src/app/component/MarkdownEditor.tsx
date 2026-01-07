@@ -1,23 +1,63 @@
-import React, { useState, useRef } from 'react';
+// ./src/app/component/MarkdownEditor.tsx
 
+import React, { useRef } from 'react';
+import type { EditorProps } from '../../lib/core/type';
 
 // 簡単なハイライト処理
 const highlight = (text: string) => {
   // HTMLエスケープ (XSS対策)
   let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  // ==========エスケープ==========
+  // \ -> \\
+  html = html.replace(/(\\)/g, '\\\\');
 
-  // 1. コマンド (#pb, #ex など) -> 青色
+  // 空白文字 -> ['.'] 
+  html = html.replace(/( )/g, '.');
+  
+  // [....] -> [\^\-\-\-]
+  html = html.replace(/(\.\.\.\.)/g, '\\^\\-\\-\\-');
+  
+  // [.] -> タグ付き[.]
+  html = html.replace(/(\.)/g, '<span style="color:#5999; position:relative; top:-5px;">$1</span>');
+  // [\^][\-] -> タグ付き[^][-]
+  html = html.replace(/(\\(-))/g, '<span style="color:#5999; position:relative; top:-5px;">$2</span>');
+  html = html.replace(/(\\(\^))/g, '<span style="color:#5999;">$2</span>');
+
+  // \\ -> \
+  html = html.replace(/(\\\\)/g, '\\');
+  // ==========デスケープ==========
+
+  // コマンド (#pb, #ex など) -> 青色
   html = html.replace(/(^|\n)(#(pb|ex|pr|as|eg).*)/g, '$1<span style="color:blue; font-weight:bold;">$2</span>');
 
-  // 2. 見出し (# タイトル) -> 緑色
+  // 見出し (# タイトル) -> 緑色
   html = html.replace(/(^|\n)(#+ .*)/g, '$1<span style="color:green; font-weight:bold;">$2</span>');
 
-  // 3. インラインコマンド (@red{}, \def{}) -> 紫色
+  // インラインコマンド (@red{}, \def{}) -> 紫色
   html = html.replace(/(@\w+|\\def)/g, '<span style="color:purple;">$1</span>');
 
-  // 4. 区切り線 (---) -> 灰色
-  html = html.replace(/(^|\n)(---)/g, '$1<span style="color:#999; font-weight:bold;">$2</span>');
+  // 1行内のソースコード -> オレンジ
+  html = html.replace(/(`.+`)/g, '<span style="color:orange;">$1</span>');
+  
+  
+  // 普通のMD記法
+  // 太字 ** text **
+  html = html.replace(/(\*\*.+\*\*)/g, '<span style="font-weight:bold;">$1</span>');
+  // 取消 ~~ text ~~
+  html = html.replace(/(~~.+~~)/g, '<span style="text-decoration: line-through;">$1</span>');
+  // 箇条書き/番号 + - * 1.
+  html = html.replace(/(^|\n)([ ]*)((-|\+|\*|1.)[ ])/g, '$1<span style="font-weight:bold; color:#559;">$2$3</span>');
+  // ルビ [漢字]{かんじ}
+  html = html.replace(/(^|\n)([ ]*)((-|\+|\*|1.)[ ])/g, '$1<span style="font-weight:bold; color:#559;">$2$3</span>');
 
+  // 区切り線 (---) -> 灰色
+  html = html.replace(/(^|\n)(---)/g, '$1<span style="color:#5999; font-weight:bold;">$2</span>');
+
+  // 行末に改行の文字 ←
+  html = html.replace(/(\n)/g, '<span style="color:#5999;">←</span>$1');
+  
+  html += '<span style="color:#5357;">[EOF]</span>';
   // 末尾の改行の挙動を合わせるために <br> を追加
   if (text.endsWith('\n')) {
     html += '<br />';
@@ -26,7 +66,7 @@ const highlight = (text: string) => {
   return html;
 };
 
-export const SimpleEditor: React.FC<Props> = ({ value, onChange }) => {
+export const MarkdownEditor: React.FC<EditorProps> = ({ value, onChange }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
 
@@ -37,7 +77,34 @@ export const SimpleEditor: React.FC<Props> = ({ value, onChange }) => {
       preRef.current.scrollLeft = textareaRef.current.scrollLeft;
     }
   };
+  
+  // Tabキー入力のハンドリング
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault(); // フォーカス移動を無効化
 
+      const target = e.target as HTMLTextAreaElement;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+
+      // 挿入するインデント（スペース4つ）
+      const indent = "    ";
+
+      // 現在のカーソル位置にインデントを挿入
+      const newValue = value.substring(0, start) + indent + value.substring(end);
+
+      // 親コンポーネントへ通知
+      onChange(newValue);
+
+      // カーソル位置をインデント分だけ後ろにずらす
+      // Reactの再レンダリング後にカーソル位置をセットする必要があるため setTimeout を使用
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + indent.length;
+        }
+      }, 0);
+    }
+  };
   const commonStyle: React.CSSProperties = {
     fontFamily: '"Menlo", "Monaco", "Consolas", monospace',
     fontSize: '16px',
@@ -64,10 +131,7 @@ export const SimpleEditor: React.FC<Props> = ({ value, onChange }) => {
         style={{
           ...commonStyle,
           pointerEvents: 'none', // クリックを下のtextareaに通す
-          color: 'transparent',  // 基本文字は透明にして、spanだけ色を出す... としたいが
-                                 // overlay方式では「文字は同じ場所」に出すので
-                                 // pre側で色をつけ、textareaを透明にするのが定石
-          color: '#333',         // 基本色
+          color: '#333',
           zIndex: 1,
         }}
         dangerouslySetInnerHTML={{ __html: highlight(value) }}
@@ -75,6 +139,7 @@ export const SimpleEditor: React.FC<Props> = ({ value, onChange }) => {
 
       {/* 前景の入力用レイヤー (透明) */}
       <textarea
+        title="markdown editor"
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}

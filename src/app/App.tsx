@@ -5,7 +5,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
 import './App.css';
-import { STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../lib/core/constant';
+import { STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY } from '../lib/core/constant';
+import { MarkdownEditor } from './component/MarkdownEditor';
 
 import studentCssString from '../style.css?inline';
 
@@ -48,6 +49,19 @@ const SAMPLE_TEXT =
         - おまけ
 - 箇条書き5
 
+**太字**
+
+~~取り消し線~~
+
+---
+この上下区切り線
+---
+
+\`\`\`python
+# ソースコード with Python
+usertext = int(input("text"))
+\`\`\`
+
 #pb 短めの問題文('答え') | 答え | ans | こたえ
 
 #pb
@@ -62,8 +76,6 @@ const SAMPLE_TEXT =
 答え | ans | こたえ
 
 \`source code\`
-
-
 
 ## 演習問題
 #pb 10 + 20 は？ | 30
@@ -129,15 +141,15 @@ const App: FunctionComponent = () => {
       </header>
 
       <div className="markdown-container">
-        {/* 入力エリア */}
+        {/* エディタエリア */}
         <div className="markdown-editor">
-          <div className="markdown-preview-text-header">Markdown入力</div>
-          <textarea
-            className="markdown-editor-text"
-            title="Input Area"
-            value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
-          />
+          <div className="markdown-editor-text-header">Markdown入力</div>
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <MarkdownEditor 
+              value={markdown} 
+              onChange={setMarkdown} 
+            />
+          </div>
         </div>
 
         {/* プレビューエリア */}
