@@ -105,6 +105,7 @@ export const MarkdownEditor: React.FC<EditorProps> = ({ value, onChange }) => {
       }, 0);
     }
   };
+  
   const commonStyle: React.CSSProperties = {
     fontFamily: '"Menlo", "Monaco", "Consolas", monospace',
     fontSize: '16px',
@@ -143,6 +144,7 @@ export const MarkdownEditor: React.FC<EditorProps> = ({ value, onChange }) => {
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
         onScroll={handleScroll}
         spellCheck={false}
         style={{
