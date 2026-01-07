@@ -13,6 +13,12 @@ export interface ProblemProps {
   cssString: string;
 }
 
+// MarkdownEditorで使う
+export interface EditorProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
 export interface BoxParser { 
   prefix: string;
   parse: (content: string) => string;

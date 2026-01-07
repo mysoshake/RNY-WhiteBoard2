@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { ProblemProps } from '../../lib/core/type';
-import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../../lib/core/constant';
+// import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../../lib/core/constant';
 
 export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl, cssString}) => {
   const jsonString = JSON.stringify(problemData);
@@ -12,23 +12,6 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
         <meta charSet="UTF-8" />
         <title>授業資料</title>
         <style dangerouslySetInnerHTML={{ __html: cssString }} />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          media="screen"
-          href={STUDENT_MAIN_REPOSITORY + STUDENT_STYLE_PATH}
-          onError={() => {
-            console.error('スタイルシートの読み込みに失敗しました');
-            const loaderror = document.getElementById('loading-error');
-            const msg = document.getElementById('error-msg');
-            if (loaderror !== null) {
-              loaderror.style.display='block';
-            }
-            if (msg !== null) {
-              msg.innerText='スタイルシートの読み込みに失敗しました';
-            }
-          }}
-        />
       </head>
       <body>
         {/* エラー表示エリア */}
@@ -63,11 +46,9 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
             </div>
         </div>
         
-        {/* 【復活】データ埋め込みスクリプト (これがないと動きません) */}
         <script dangerouslySetInnerHTML={{ __html: `window.PROBLEM_DATA_LIST = ${jsonString};` }} />
         
-        {/* メインスクリプト読み込み (エラーハンドリング付き) */}
-        {/* ReactのonErrorはDOM属性として出力されないことがあるため、dangerouslySetInnerHTMLでscriptタグを直接書くのが確実です */}
+        {/* メインスクリプト読み込み */}
         <div dangerouslySetInnerHTML={{ __html: `
             <script src="${scriptUrl}" onerror="document.getElementById('loading-error').style.display='block'"></script>
         `}} />

@@ -96,14 +96,18 @@ function initStudentSystem() {
   const drawerToggle = document.getElementById('drawer-toggle');
   const drawerList = document.getElementById('drawer-list');
 
-  // トグルボタン処理
-  if (drawer && drawerToggle) {
+  // メニュー開閉
+  if (drawerToggle && drawer) {
     drawerToggle.addEventListener('click', () => {
-      const willOpen = !drawer.classList.contains('open');
-      drawer.classList.toggle('open');
-      drawerToggle.textContent = willOpen ? '▶ 閉じる' : '◀ 解答';
+      const isOpen = drawer.classList.toggle('open');
       
-      recordLog('info', `Drawer toggled: ${willOpen ? 'OPEN' : 'CLOSE'}`);
+      if (isOpen) {
+          document.body.classList.add('drawer-open');
+          drawerToggle.textContent = '▶ 閉じる';
+      } else {
+          document.body.classList.remove('drawer-open');
+          drawerToggle.textContent = '◀ 解答';
+      }
     });
   }
 

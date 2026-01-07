@@ -5,10 +5,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
 import './App.css';
-import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../lib/core/constant';
+import { STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../lib/core/constant';
 
-import '../../src/style.css'; 
-import studentCssString from '../../src/style.css?inline';
+import studentCssString from '../style.css?inline';
 
 // 最初の md テキスト
 const SAMPLE_TEXT = 
@@ -73,7 +72,7 @@ const SAMPLE_TEXT =
 const App: FunctionComponent = () => {
   const [markdown, setMarkdown] = useState(SAMPLE_TEXT);
   const [previewHtml, setPreviewHtml] = useState('');
-  const [scriptUrl, setScriptUrl] = useState(STUDENT_MAIN_REPOSITORY + STUDENT_STYLE_PATH);
+  const [scriptUrl, setScriptUrl] = useState(STUDENT_MAIN_REPOSITORY + STUDENT_MAIN_PATH);
 
   // マークダウン入力時にプレビューを更新
   useEffect(() => {
@@ -108,6 +107,7 @@ const App: FunctionComponent = () => {
 
   return (
     <div className="app-container">
+      <style>{studentCssString}</style>
       <header className="app-header">
         <h1>授業資料作成ツール</h1>
         <div>
@@ -143,11 +143,15 @@ const App: FunctionComponent = () => {
         {/* プレビューエリア */}
         <div className="markdown-preview">
           <div className="markdown-preview-text-header">プレビュー</div>
-          <div
-            className="container-prev"
-            // style={{ minHeight: 'auto', boxShadow: 'none', margin: '0' }}
-            dangerouslySetInnerHTML={{ __html: previewHtml }} 
-          />
+            <div
+              className="markdown-preview-text"
+            >
+              <div
+                className="container-prev"
+                // style={{ minHeight: 'auto', boxShadow: 'none', margin: '0' }}
+                dangerouslySetInnerHTML={{ __html: previewHtml }} 
+              />
+            </div>
         </div>
       </div>
     </div>

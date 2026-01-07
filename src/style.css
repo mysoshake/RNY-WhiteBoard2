@@ -13,6 +13,12 @@ body {
     background-color: #dcdcdc; /* 背景グレー */
     color: #333;
     line-height: 1.6;
+    /* ドロワー開閉時のアニメーション */
+    transition: margin-right 0.3s ease;
+}
+
+body.drawer-open {
+    margin-right: 300px; /* ドロワーの幅だけ右に余白を作る＝全体が左に寄る */
 }
 
 .container-prev,
@@ -80,10 +86,11 @@ body {
 }
 .drawer-toggle {
     position: absolute;
-    left: -40px;
+    left: -50px;
     top: 20px;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 80px;
+    padding-right: 20px;
     background-color: #333;
     color: #fff;
     border: none;
