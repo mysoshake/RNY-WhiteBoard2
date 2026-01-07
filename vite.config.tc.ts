@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/RNY-WhiteBoard2/dist/',
+  base: '/RNY-WhiteBoard2/teacher/',
   // 開発サーバーの設定
   server: {
     open: true, // 自動でブラウザを開く
