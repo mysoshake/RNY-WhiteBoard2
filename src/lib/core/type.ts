@@ -11,7 +11,7 @@ export interface ProblemProps {
   problemData: ProblemItem[];
   scriptUrl: string;
   cssString: string;
-}
+} 
 
 // MarkdownEditorで使う
 export interface EditorProps {
