@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
 import type { MacroDef, ParseResult, ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
+import katex from 'katex';
 
 // --- ユーティリティ: コマンド使用箇所の正規表現生成 ---
 function createCommandRegex(commandName: string, argCount: number): RegExp {
@@ -77,7 +78,43 @@ function processInlineCommands(
   getCounter: () => number
 ): string {
   let currentText = text;
+  
+  // 0. 数式 (Math) の処理 【追加】
+  // Markdownや他のコマンドより先に処理して、数式内の * や _ が変換されるのを防ぐ
+  
+  // ブロック数式: $$ ... $$ か \[ ... \]
+  const regexMathBlock = /((\$\$|\\\[)([\s\S]*?)(\$\$|\\\]))/g;
+  currentText = currentText.replace(regexMathBlock, (_, __, ___, math) => {
+      try {
+          const html = katex.renderToString(math, { 
+              displayMode: true, // ブロックモード
+              throwOnError: false // エラーでも停止させない
+          });
+          const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
+          placeholders[key] = html;
+          return key;
+      } catch (e) {
+          return `$$${math}$$`; // エラー時はそのまま表示
+      }
+  });
 
+  // インライン数式: $ ... $ か \( ... \)
+  // (誤爆防止のため、改行を含まない、かつ空でないものに限定)
+  const regexMathInline = /((\$|\\\()([\s\S]*?)(\$|\\\)))/g;
+  currentText = currentText.replace(regexMathInline, (_, __, ___, math) => {
+    try {
+      const html = katex.renderToString(math, { 
+          displayMode: false, // インラインモード
+          throwOnError: false
+      });
+      const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
+      placeholders[key] = html;
+      return key;
+    } catch (e) {
+      return `$${math}$`;
+    }
+  });
+  
   // 1. マクロ展開
   macros.forEach(macro => {
     const regex = createCommandRegex(macro.name, macro.argCount);
@@ -98,7 +135,7 @@ function processInlineCommands(
     const innerHtml = marked.parseInline(content, { async: false }) as string;
     const html = `<span style="color:red">${innerHtml}</span>`;
     
-    const key = `RNY_INLINE_CMD_${getCounter()}`;
+    const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
     placeholders[key] = html;
     return key;
   });
@@ -110,7 +147,7 @@ function processInlineCommands(
     const heightAttr = h === '*' ? '' : `height="${h}"`;
     const html = `<img src="${src}" alt="${alt}" ${widthAttr} ${heightAttr} style="max-width:100%; vertical-align:middle;" />`;
     
-    const key = `RNY_INLINE_CMD_${getCounter()}`;
+    const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
     placeholders[key] = html;
     return key;
   });
@@ -145,21 +182,21 @@ export function parseMarkdown(markdown: string): ParseResult {
   let problemCounter = 0;
   let placeholderCounter = 0;
 
-  // 【変更点】最初に行分割せず、マクロ定義を全文から抽出・削除する
+  // 最初に行分割せず、マクロ定義を全文から抽出・削除する
   const { cleanedText, macros } = extractMacros(markdown);
 
   // マクロ定義除去後のテキストを行分割して解析
   const lines = cleanedText.split('\n');
   let processedLines: string[] = [];
   
-  let inProblemBlock = false;
+  let inBlock = false;
   let problemBodyBuffer: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
 
-    // --- ブロック処理 (Problem) ---
-    if (inProblemBlock) {
+    // --- ブロック処理 ---
+    if (inBlock) {
       if (line.trim() === '---') {
       const answerLine = lines[i + 1] || "";
       i++; 
@@ -176,11 +213,11 @@ export function parseMarkdown(markdown: string): ParseResult {
       const problemHtml = marked.parse(textWithCommands, { async: false }) as string;
       
       const htmlBlock = Problem(index, problemHtml);
-      const placeholder = `RNY_PROBLEM_BLOCK_${index}`;
+      const placeholder = `%%%RNY_PROBLEM_BLOCK_${index}%%%`;
       placeholders[placeholder] = htmlBlock;
       processedLines.push(placeholder);
 
-      inProblemBlock = false;
+      inBlock = false;
       problemBodyBuffer = [];
       } else {
         problemBodyBuffer.push(line);
@@ -189,7 +226,7 @@ export function parseMarkdown(markdown: string): ParseResult {
     }
 
     if (line.trim() === '#pb') {
-      inProblemBlock = true;
+      inBlock = true;
       problemBodyBuffer = [];
       continue;
     }
@@ -216,7 +253,7 @@ export function parseMarkdown(markdown: string): ParseResult {
           const questionHtml = marked.parse(textWithCommands, { async: false }) as string;
           const htmlBlock = Problem(index, questionHtml);
           
-          const placeholder = `RNY_PROBLEM_BLOCK_${index}`;
+          const placeholder = `%%%RNY_PROBLEM_BLOCK_${index}%%%`;
           placeholders[placeholder] = htmlBlock;
           processedLines.push(placeholder);
           continue;

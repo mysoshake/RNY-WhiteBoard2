@@ -11,48 +11,48 @@ const highlight = (text: string) => {
   // ==========エスケープ==========
   // \ -> \\
   html = html.replace(/(\\)/g, '\\\\');
-
-  // 空白文字 -> ['.'] 
-  html = html.replace(/( )/g, '.');
+  // 空白文字 -> ['\.'] 
+  html = html.replace(/( )/g, '\\.');
   
-  // [....] -> [\^\-\-\-]
-  html = html.replace(/(\.\.\.\.)/g, '\\^\\-\\-\\-');
-  
-  // [.] -> タグ付き[.]
-  html = html.replace(/(\.)/g, '<span style="color:#5999; position:relative; top:-5px;">$1</span>');
-  // [\^][\-] -> タグ付き[^][-]
-  html = html.replace(/(\\(-))/g, '<span style="color:#5999; position:relative; top:-5px;">$2</span>');
-  html = html.replace(/(\\(\^))/g, '<span style="color:#5999;">$2</span>');
-
-  // \\ -> \
-  html = html.replace(/(\\\\)/g, '\\');
-  // ==========デスケープ==========
-
+  // =====オリジナルコマンド===== 
   // コマンド (#pb, #ex など) -> 青色
   html = html.replace(/(^|\n)(#(pb|ex|pr|as|eg).*)/g, '$1<span style="color:blue; font-weight:bold;">$2</span>');
-
   // 見出し (# タイトル) -> 緑色
   html = html.replace(/(^|\n)(#+ .*)/g, '$1<span style="color:green; font-weight:bold;">$2</span>');
-
   // インラインコマンド (@red{}, \def{}) -> 紫色
   html = html.replace(/(@\w+|\\def)/g, '<span style="color:purple;">$1</span>');
-
   // 1行内のソースコード -> オレンジ
   html = html.replace(/(`.+`)/g, '<span style="color:orange;">$1</span>');
   
+  // ===== KaTeX数式 =====
+  // $数式$ か $$数式$$ 
+  html = html.replace(/((\$|\$\$|\\\\\[|\\\\\()([\s\S]*?)(\$|\$\$|\\\\\]|\\\\\)))/g, '<span style="color:#074;">$1</span>');
   
-  // 普通のMD記法
+  // ===== 普通のMD記法===== 
   // 太字 ** text **
   html = html.replace(/(\*\*.+\*\*)/g, '<span style="font-weight:bold;">$1</span>');
   // 取消 ~~ text ~~
   html = html.replace(/(~~.+~~)/g, '<span style="text-decoration: line-through;">$1</span>');
   // 箇条書き/番号 + - * 1.
-  html = html.replace(/(^|\n)([ ]*)((-|\+|\*|1.)[ ])/g, '$1<span style="font-weight:bold; color:#559;">$2$3</span>');
-  // ルビ [漢字]{かんじ}
-  html = html.replace(/(^|\n)([ ]*)((-|\+|\*|1.)[ ])/g, '$1<span style="font-weight:bold; color:#559;">$2$3</span>');
-
+  html = html.replace(/(^|\n)((\\\.)*)((-|\+|\*|1.)((\\.)))/g, '$1<span style="font-weight:bold; color:#559;">$2$4</span>');
+  // // ルビ [漢字]{かんじ}
+  // html = html.replace(/(^|\n)([ ]*)((-|\+|\*|1.)[ ])/g, '$1<span style="font-weight:bold; color:#559;">$2$3</span>');
   // 区切り線 (---) -> 灰色
   html = html.replace(/(^|\n)(---)/g, '$1<span style="color:#5999; font-weight:bold;">$2</span>');
+
+  // インデント表示
+  // [\.\.\.\.] -> [\^\-\-\-]
+  html = html.replace(/(\\\.\\\.\\\.\\\.)/g, '\\^\\-\\-\\-');
+  // [\^][\-] -> タグ付き[^][-]
+  html = html.replace(/(\\(-))/g, '<span style="color:#5999; position:relative; top:-5px;">$2</span>');
+  html = html.replace(/(\\(\^))/g, '<span style="color:#5999;">$2</span>');
+  
+  // ==========デスケープ==========
+  // [\.] -> タグ付き[.]
+  html = html.replace(/\\(\.)/g, '<span style="color:#5999; position:relative; top:-5px;">$1</span>');
+  // \\ -> \
+  html = html.replace(/(\\\\)/g, '\\');
+
 
   // 行末に改行の文字 ←
   html = html.replace(/(\n)/g, '<span style="color:#5999;">←</span>$1');

@@ -2,6 +2,7 @@
 
 // 拡張されたデータ定義
 export interface ProblemItem {
+  mode?: 'quiz' | 'essay';
   correctHashes: string[];
   encryptedText: string;
 }
