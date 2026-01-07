@@ -1,6 +1,6 @@
 // ./src/app/App.tsx
 
-import React, { type FunctionComponent, useState, useEffect } from 'react';
+import React, { type FunctionComponent, useState, useEffect, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
@@ -96,12 +96,25 @@ const App: FunctionComponent = () => {
   const [previewHtml, setPreviewHtml] = useState('');
   const [scriptUrl, setScriptUrl] = useState(STUDENT_MAIN_REPOSITORY + STUDENT_MAIN_PATH);
 
+  const previewRef = useRef<HTMLDivElement>(null);
+
   // マークダウン入力時にプレビューを更新
   useEffect(() => {
     const { html } = parseMarkdown(markdown);
     setPreviewHtml(html);
   }, [markdown]);
 
+  // previewHtmlが変わるたびにMathJaxを更新
+  useEffect(() => {
+    if (previewRef.current && window.MathJax) {
+      window.MathJax
+        .typesetPromise([previewRef.current])
+        .catch((err) => {
+          console.error(err)
+        });
+    }
+  }, [previewHtml]);
+  
   // ダウンロード処理
   const handleDownload = () => {
     const { html, problemData } = parseMarkdown(markdown);
