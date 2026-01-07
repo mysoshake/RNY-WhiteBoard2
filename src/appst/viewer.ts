@@ -120,7 +120,6 @@ function initStudentSystem() {
       const problems = document.querySelectorAll('.problem-container');
       const targetContainer = problems[index];
       let questionSnippet = `Q${index + 1}`;
-      
       if (targetContainer) {
           const qContent = targetContainer.querySelector('.question-content');
           if (qContent && qContent.textContent) {
@@ -149,17 +148,49 @@ function initStudentSystem() {
     const index = parseInt(indexStr, 10);
     const data = problemList[index];
 
-    const input = container.querySelector('.student-input') as HTMLInputElement;
+    const type = container.getAttribute('data-type');
+
+    const input = container.querySelector('.student-input, .student-essay-input') as HTMLInputElement | HTMLTextAreaElement;
     const btn = container.querySelector('.check-btn') as HTMLButtonElement;
     const msg = container.querySelector('.result-msg') as HTMLSpanElement;
 
-    if (!input || !btn || !msg) return;
+    if (!input || !btn || !msg || !type) return;
 
     btn.addEventListener('click', () => {
       const val = input.value.trim();
       const hash = simpleHash(val);
       // indexOf を使用 (古いブラウザ互換)
       const isCorrect = data.correctHashes.indexOf(hash) !== -1;
+
+      // --- Essay (感想・考察) の場合 ---
+      if (type === 'essay') {
+          if (val.length === 0) {
+              alert("内容を入力してください");
+              return;
+          }
+
+          msg.innerHTML = `<span style="color:green">記録しました</span>`;
+          input.disabled = true;
+          btn.disabled = true;
+          btn.textContent = "記録済み";
+
+          // ログ: エッセイ記録
+          recordLog('answer', `Essay ${index + 1} submitted`, { input: val });
+
+          // データ記録 (正解扱いで保存)
+          progress.answers[index] = {
+              userAnswer: val,
+              isCorrect: true, // 完了フラグとしてtrueを使う
+              timestamp: new Date().toISOString()
+          };
+
+          // ドロワーには「(記述済み)」と表示するか、内容の一部を表示
+          addAnswerToDrawer(index, "(記述済み)");
+          
+          updateGateVisibility();
+          return;
+      }
+
       
       recordLog('answer', `Question ${index + 1} attempt`, { 
           input: val, 

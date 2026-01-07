@@ -204,6 +204,7 @@ export function parseMarkdown(markdown: string): ParseResult {
       const answers = answerLine.split('|').map(a => a.trim()).filter(a => a);
       
       problemData.push({
+        mode: 'quiz',
         correctHashes: answers.map(a => simpleHash(a)),
         encryptedText: obfuscateAnswer(answers[0] || "")
       });
@@ -243,6 +244,7 @@ export function parseMarkdown(markdown: string): ParseResult {
       if (answers.length > 0) {
         const index = problemCounter++;
         problemData.push({
+          mode: 'quiz',
           correctHashes: answers.map(a => simpleHash(a)),
           encryptedText: obfuscateAnswer(answers[0])
         });

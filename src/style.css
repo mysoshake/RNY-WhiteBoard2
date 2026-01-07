@@ -63,6 +63,42 @@ body.drawer-open {
 /* --- ゲートシステム --- */
 .is-locked { display: none !important; }
 
+/* Essay用スタイル */
+.essay-container { 
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+.essay-input-text {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 100px;
+}
+.essay-input-text:disabled {
+    background-color: #f9f9f9;
+    color: #666;
+}
+.essay-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.essay-submit-btn {
+    background-color: #28a745; /* 記録ボタンは緑系 */
+}
+.essay-submit-btn:hover {
+    background-color: #218838;
+}
+.essay-submit-btn:disabled {
+    background-color: #ccc;
+}
+
 /* --- 制御エリア --- */
 #save-area { margin-top: 60px; padding: 20px; border-top: 1px solid #ccc; text-align: center; color: #666; }
 

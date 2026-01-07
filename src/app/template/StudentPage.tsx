@@ -2,7 +2,6 @@
 
 import React from 'react';
 import type { ProblemProps } from '../../lib/core/type';
-// import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../../lib/core/constant';
 
 export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl, cssString}) => {
   const jsonString = JSON.stringify(problemData);
@@ -11,6 +10,11 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
       <head>
         <meta charSet="UTF-8" />
         <title>授業資料</title>
+        <link 
+          rel="stylesheet" 
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" 
+          crossOrigin="anonymous"
+        />
         <style dangerouslySetInnerHTML={{ __html: cssString }} />
       </head>
       <body>
