@@ -5,16 +5,66 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
 import './App.css';
-import { STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../lib/core/constant';
+import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../lib/core/constant';
+
+import '../../src/style.css'; 
+import studentCssString from '../../src/style.css?inline';
 
 // 最初の md テキスト
 const SAMPLE_TEXT = 
 `# 第1回 イントロダクション
+## セクション
+### サブセクション
+#### サブサブセクション
+##### ちっちゃい
+###### 超ちっちゃい
 
 ようこそ。
 
-#ex 計算の基本
+#ex 説明:計算の基本
 1 + 1 は 2 です。
+
+#eg 例:
+2 × 4 = 8
+
+#pr 練習: 
+2 × 4 = ?
+
+#as 課題:
+22 × 10 = ?
+
+- 箇条書き1
+- 箇条書き2
+    - 箇条書き3
+- 箇条書き4
+    1. 連番1
+        - おまけ
+        - おまけ
+    1. 連番2
+        - おまけ
+    1. 連番3
+        - おまけ
+        - おまけ
+        - おまけ
+        - おまけ
+- 箇条書き5
+
+#pb 短めの問題文('答え') | 答え | ans | こたえ
+
+#pb
+長い問題
+複数行にわたって書く
+
+**太字になってほしい**
+
+@red{ **赤太字になってほしい** }
+
+---
+答え | ans | こたえ
+
+\`source code\`
+
+
 
 ## 演習問題
 #pb 10 + 20 は？ | 30
@@ -40,7 +90,8 @@ const App: FunctionComponent = () => {
       <StudentPage 
         contentHtml={html} 
         problemData={problemData} 
-        scriptUrl={scriptUrl} 
+        scriptUrl={scriptUrl}
+        cssString={studentCssString}
       />
     );
 
@@ -93,7 +144,8 @@ const App: FunctionComponent = () => {
         <div className="markdown-preview">
           <div className="markdown-preview-text-header">プレビュー</div>
           <div
-            className="markdown-preview-text"
+            className="container"
+            // style={{ minHeight: 'auto', boxShadow: 'none', margin: '0' }}
             dangerouslySetInnerHTML={{ __html: previewHtml }} 
           />
         </div>

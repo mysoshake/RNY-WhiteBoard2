@@ -4,30 +4,14 @@ import React from 'react';
 import type { ProblemProps } from '../../lib/core/type';
 import { STUDENT_MAIN_REPOSITORY, STUDENT_STYLE_PATH } from '../../lib/core/constant';
 
-export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl }) => {
+export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl, cssString}) => {
   const jsonString = JSON.stringify(problemData);
-  const criticalStyles = `
-    #loading-error {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(255, 255, 255, 0.98);
-        z-index: 9999;
-        text-align: center;
-        padding-top: 100px;
-        color: #d32f2f;
-        font-family: sans-serif;
-    }
-    #loading-error h2 { font-size: 2rem; margin-bottom: 20px; }
-    #loading-error p { font-size: 1.2rem; margin: 10px 0; }
-  `;
-  
   return (
     <html lang="ja">
       <head>
         <meta charSet="UTF-8" />
         <title>授業資料</title>
-        <style dangerouslySetInnerHTML={{ __html: criticalStyles }} />
+        <style dangerouslySetInnerHTML={{ __html: cssString }} />
         <link
           rel="stylesheet"
           type="text/css"

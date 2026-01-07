@@ -1,5 +1,10 @@
 /* ./src/style.css */
 
+* {
+    font-weight: 100;
+    box-sizing: border-box;
+}
+
 /* --- 基本レイアウト --- */
 body {
     font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
@@ -9,6 +14,8 @@ body {
     color: #333;
     line-height: 1.6;
 }
+
+.container-prev,
 .container {
     max-width: 800px;
     margin: 5px auto;
@@ -18,6 +25,13 @@ body {
     box-shadow: 0 0 15px rgba(0,0,0,0.1);
     position: relative;
     padding-bottom: 60px; /* footer用余白 */
+}
+
+.container-prev {
+    min-height: 0;
+    min-height: auto;
+    box-shadow: none;
+    margin: 0;
 }
 
 /* --- 問題 (#pb) --- */
@@ -124,15 +138,15 @@ body {
 }
 
 /* --- エラー表示用 --- */
-    #loading-error {
-        display: none; /* 初期状態は非表示 */
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(255, 255, 255, 0.95);
-        z-index: 9999;
-        text-align: center;
-        padding-top: 100px;
-        color: #d32f2f;
-    }
-    #loading-error h2 { font-size: 2rem; margin-bottom: 20px; }
-    #loading-error p { font-size: 1.2rem; }
+#loading-error {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    text-align: center;
+    padding-top: 100px;
+    color: #d32f2f;
+}
+#loading-error h2 { font-size: 2rem; margin-bottom: 20px; }
+#loading-error p { font-size: 1.2rem; }

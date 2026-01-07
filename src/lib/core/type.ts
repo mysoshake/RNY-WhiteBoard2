@@ -10,6 +10,7 @@ export interface ProblemProps {
   contentHtml: string;
   problemData: ProblemItem[];
   scriptUrl: string;
+  cssString: string;
 }
 
 export interface BoxParser { 
