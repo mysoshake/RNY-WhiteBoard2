@@ -144,7 +144,7 @@ const App: FunctionComponent = () => {
         <div className="markdown-preview">
           <div className="markdown-preview-text-header">プレビュー</div>
           <div
-            className="container"
+            className="container-prev"
             // style={{ minHeight: 'auto', boxShadow: 'none', margin: '0' }}
             dangerouslySetInnerHTML={{ __html: previewHtml }} 
           />
