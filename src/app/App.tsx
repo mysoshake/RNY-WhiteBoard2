@@ -9,7 +9,6 @@ import { STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY } from '../lib/core/constant
 import { MarkdownEditor } from './component/MarkdownEditor';
 
 import studentCssString from '../style.css?inline';
-import katexCssString from 'katex/dist/katex.min.css?inline';
 
 // 最初の md テキスト
 const SAMPLE_TEXT = 
@@ -107,7 +106,8 @@ const App: FunctionComponent = () => {
   const handleDownload = () => {
     const { html, problemData } = parseMarkdown(markdown);
     
-    const combinedCssString = studentCssString + '\n' + katexCssString;
+    // 他のCSSを組み合わせるときはここに追記
+    const combinedCssString = studentCssString;
     
     // Reactコンポーネントを静的なHTML文字列に変換
     const pageMarkup = renderToStaticMarkup(
@@ -133,7 +133,6 @@ const App: FunctionComponent = () => {
   return (
     <div className="app-container">
       <style>{studentCssString}</style>
-      <style>{katexCssString}</style>
       <header className="app-header">
         <h1>授業資料作成ツール</h1>
         <div>

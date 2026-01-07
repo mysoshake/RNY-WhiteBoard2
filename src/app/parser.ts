@@ -4,7 +4,6 @@ import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
 import type { MacroDef, ParseResult, ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
-import katex from 'katex';
 
 // --- ユーティリティ: コマンド使用箇所の正規表現生成 ---
 function createCommandRegex(commandName: string, argCount: number): RegExp {
@@ -79,40 +78,22 @@ function processInlineCommands(
 ): string {
   let currentText = text;
   
-  // 0. 数式 (Math) の処理 【追加】
-  // Markdownや他のコマンドより先に処理して、数式内の * や _ が変換されるのを防ぐ
-  
-  // ブロック数式: $$ ... $$ か \[ ... \]
+  // 0. 数式 (Math) の保護
+  // MathJaxに処理させるため、Markdown変換前にプレースホルダー化して「そのまま」保存する
+  // ブロック数式: $$ ... $$ または \[ ... \]
   const regexMathBlock = /((\$\$|\\\[)([\s\S]*?)(\$\$|\\\]))/g;
-  currentText = currentText.replace(regexMathBlock, (_, __, ___, math) => {
-      try {
-          const html = katex.renderToString(math, { 
-              displayMode: true, // ブロックモード
-              throwOnError: false // エラーでも停止させない
-          });
-          const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
-          placeholders[key] = html;
-          return key;
-      } catch (e) {
-          return `$$${math}$$`; // エラー時はそのまま表示
-      }
-  });
-
-  // インライン数式: $ ... $ か \( ... \)
-  // (誤爆防止のため、改行を含まない、かつ空でないものに限定)
-  const regexMathInline = /((\$|\\\()([\s\S]*?)(\$|\\\)))/g;
-  currentText = currentText.replace(regexMathInline, (_, __, ___, math) => {
-    try {
-      const html = katex.renderToString(math, { 
-          displayMode: false, // インラインモード
-          throwOnError: false
-      });
+  currentText = currentText.replace(regexMathBlock, (match) => {
+      // そのまま保存して、Markdown変換後に復元する
       const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
-      placeholders[key] = html;
+      placeholders[key] = match;
       return key;
-    } catch (e) {
-      return `$${math}$`;
-    }
+  });
+  // インライン数式: $ ... $ または \( ... \)
+  const regexMathInline = /((\$|\\\()([\s\S]*?)(\$|\\\)))/g;
+  currentText = currentText.replace(regexMathInline, (match) => {
+      const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
+      placeholders[key] = match;
+      return key;
   });
   
   // 1. マクロ展開

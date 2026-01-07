@@ -5,17 +5,33 @@ import type { ProblemProps } from '../../lib/core/type';
 
 export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl, cssString}) => {
   const jsonString = JSON.stringify(problemData);
+  
+// MathJaxの設定スクリプト
+  const mathJaxConfig = `
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], // $...$ をインライン数式として認識させる
+        displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  `;
   return (
     <html lang="ja">
       <head>
         <meta charSet="UTF-8" />
         <title>授業資料</title>
-        <link 
-          rel="stylesheet" 
-          href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" 
-          crossOrigin="anonymous"
-        />
         <style dangerouslySetInnerHTML={{ __html: cssString }} />
+        {/* MathJax設定(str)と読み込み(CDN) */}
+        <script dangerouslySetInnerHTML={{ __html: mathJaxConfig }} />
+        <script 
+          type="text/javascript" 
+          id="MathJax-script" 
+          async 
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+        />
       </head>
       <body>
         {/* エラー表示エリア */}
