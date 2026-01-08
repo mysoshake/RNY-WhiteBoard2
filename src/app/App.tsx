@@ -4,10 +4,11 @@ import React, { type FunctionComponent, useState, useEffect, useRef } from 'reac
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
-import './App.css';
 import { STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY } from '../lib/core/constant';
 import { MarkdownEditor } from './component/MarkdownEditor';
 
+import './App.css'; 
+import appCssString from './App.css?inline'; 
 import studentCssString from '../style.css?inline';
 
 const STORAGE_KEY_DRAFT_ID = 'rny_teacher_draft';
@@ -170,7 +171,7 @@ const App: FunctionComponent = () => {
     <div className="app-container">
       <style>{studentCssString}</style>
       <header className="app-header">
-        <h1>授業資料作成ツール</h1>
+        <h1 className="app-header-title">授業資料作成ツール</h1>
         <div>
           JSファイル パス: 
           <input 
@@ -188,6 +189,8 @@ const App: FunctionComponent = () => {
           HTML出力
         </button>
       </header>
+
+      <style>{appCssString}</style>
 
       <div className="markdown-container">
         {/* エディタエリア */}

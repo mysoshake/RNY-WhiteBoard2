@@ -2,7 +2,9 @@
 
 import type { MacroDef } from "../core/type";
 
-// 自作コマンドを正規表現で表す
+/**
+ * 自作コマンドを正規表現で表す
+ */
 function createCommandRegex(commandName: string, argCount: number): RegExp {
   // 特殊文字をエスケープして正規表現化
   const escapedName = commandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 

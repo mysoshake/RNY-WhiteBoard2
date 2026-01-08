@@ -22,7 +22,9 @@ function initStudentSystem() {
     savedAt: ""
   };
   
-  // ログ用関数
+  /**
+   * ログ用関数
+   */
   function recordLog(type: ActionLog['type'], message: string, details?: any) {
     const log: ActionLog = {
         timestamp: new Date().toISOString(),
@@ -39,7 +41,9 @@ function initStudentSystem() {
     console.log(`[${log.timestamp}] [${type}] ${message}`, details || '');
   }
   
-  // --- ストレージ保存 ---
+  /**
+   * --- ストレージ保存 ---
+   */
   function saveToStorage(storageId: string = "") {
     try {
         localStorage.setItem(STORAGE_KEY_PREFIX_PROGRESS + storageId, JSON.stringify(progress));
@@ -50,7 +54,9 @@ function initStudentSystem() {
     
   recordLog('system', 'System Initialized', { problemCount: problemList.length });
   
-  // --- ゲートシステム ---
+  /**
+   * --- ゲートシステム ---
+   */
   function updateGateVisibility() {
     const problems = document.querySelectorAll('.problem-container');
     let locked = false;
@@ -123,7 +129,9 @@ function initStudentSystem() {
     });
   }
 
-  // 解答リストへの追加処理
+  /**
+   * 解答リストへの追加処理
+   */
   function addAnswerToDrawer(index: number, answerText: string) {
       if (!drawerList) return;
       // 重複チェック
@@ -264,7 +272,9 @@ function initStudentSystem() {
     });
   }
   
-// --- 復元処理 (Restore) ---
+  /** 
+   * --- 復元処理 (Restore) ---
+   */
   function restoreProgress(storageId: string = "") {
     const saved = localStorage.getItem(STORAGE_KEY_PREFIX_PROGRESS + storageId);
     if (!saved) return;
