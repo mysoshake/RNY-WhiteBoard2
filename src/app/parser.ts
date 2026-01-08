@@ -4,70 +4,7 @@ import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
 import type { MacroDef, ParseResult, ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
-
-// --- ユーティリティ: コマンド使用箇所の正規表現生成 ---
-function createCommandRegex(commandName: string, argCount: number): RegExp {
-  // 特殊文字をエスケープして正規表現化
-  const escapedName = commandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
-  let pattern = escapedName;
-  for (let i = 0; i < argCount; i++) {
-    pattern += '\\{([^}]*)\\}'; 
-  }
-  return new RegExp(pattern, 'g');
-}
-
-function extractMacros(input: string): { cleanedText: string, macros: MacroDef[] } {
-  let text = input;
-  const macros: MacroDef[] = [];
-  
-  // 無限ループ防止のため、最大ループ回数を設ける（安全策）
-  let loopLimit = 1000;
-  
-  while (loopLimit-- > 0) {
-    // \def{@name}[N]{ の開始部分を探す
-    const match = text.match(/\\def\{(@\w+)\}\[(\d+)\]\{/);
-    
-    // 見つからなければ終了
-    if (!match || match.index === undefined) break;
-
-    const name = match[1];
-    const argCount = parseInt(match[2], 10);
-    const startIndex = match.index;
-    
-    // 定義の中身の開始位置
-    const contentStartIndex = startIndex + match[0].length;
-    
-    // 括弧のバランスをカウントして、対応する閉じ括弧 } を探す
-    let braceCount = 1; // 最初の { 分
-    let endIndex = -1;
-    
-    for (let i = contentStartIndex; i < text.length; i++) {
-      if (text[i] === '{') braceCount++;
-      else if (text[i] === '}') braceCount--;
-      
-      if (braceCount === 0) {
-        endIndex = i;
-        break;
-      }
-    }
-
-    if (endIndex === -1) {
-      console.warn(`Macro definition error: Unclosed brace for ${name}`);
-      break; // 安全のため抜ける
-    }
-
-    // テンプレート部分を抽出
-    const template = text.substring(contentStartIndex, endIndex);
-    
-    macros.push({ name, argCount, template });
-
-    // 元のテキストから定義部分を削除 (開始〜終了まで)
-    // 削除後にループすることで、次の \def を探す
-    text = text.substring(0, startIndex) + text.substring(endIndex + 1);
-  }
-  
-  return { cleanedText: text, macros };
-}
+import { expandMacrosWithText } from '../lib/macro/preprocessor';
 
 // インラインコマンドの処理
 function processInlineCommands(
@@ -78,45 +15,40 @@ function processInlineCommands(
 ): string {
   let currentText = text;
   
-  // 0. 数式 (Math) の保護
-  // MathJaxに処理させるため、Markdown変換前にプレースホルダー化して「そのまま」保存する
-  // ブロック数式: $$ ... $$ または \[ ... \]
-  const regexMathBlock = /((\$\$|\\\[)([\s\S]*?)(\$\$|\\\]))/g;
-  currentText = currentText.replace(regexMathBlock, (match) => {
-      // そのまま保存して、Markdown変換後に復元する
-      const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
-      placeholders[key] = match;
-      return key;
-  });
-  // インライン数式: $ ... $ または \( ... \)
-  const regexMathInline = /((\$|\\\()([\s\S]*?)(\$|\\\)))/g;
-  currentText = currentText.replace(regexMathInline, (match) => {
-      const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
-      placeholders[key] = match;
-      return key;
-  });
+  // 0. 数式 (Math) と ソースコードの保護
+  // Markdown変換前にプレースホルダー化して「そのまま」保存する
+  const shouldPlaceholders = [
+    // ブロック数式: $$ ... $$ または \[ ... \]
+    /((\$\$|\\\[)([\s\S]*?)(\$\$|\\\]))/g,
+    // コードブロック: #cd 言語 ... !#cd
+    /((#cd\s)([\s\S]*?)(!#cd))/g,
+    // インライン数式: $ ... $ または \( ... \)
+    /((\$|\\\()([\s\S]*?)(\$|\\\)))/g,
+    // インラインコード: `...`
+    /((`)([\s\S]*?)(`))/g,
+  ];
+  
+  for (let iregex = 0; iregex < shouldPlaceholders.length; iregex++) {
+    const regex = shouldPlaceholders[iregex];
+    currentText = currentText.replace(regex, (match) => {
+        const key = `%%%CMD_PLACE_HOLDER_${getCounter()}%%%`;
+        placeholders[key] = match;
+        return key;
+    });
+  }
+  
   
   // 1. マクロ展開
-  macros.forEach(macro => {
-    const regex = createCommandRegex(macro.name, macro.argCount);
-    currentText = currentText.replace(regex, (match, ...args) => {
-      console.log(match, args);
-      let result = macro.template;
-      for (let i = 0; i < macro.argCount; i++) {
-        result = result.split(`$${i + 1}`).join(args[i]);
-      }
-      return result;
-    });
-  });
+  currentText = expandMacrosWithText(currentText, macros);
 
-  // 2. @red
+  // 2. @色名
   const regexRed = /@red\{([^}]*)\}/g;
   currentText = currentText.replace(regexRed, (_, content) => {
     // 中身もMarkdownパースする
     const innerHtml = marked.parseInline(content, { async: false }) as string;
     const html = `<span style="color:red">${innerHtml}</span>`;
     
-    const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
+    const key = `%%%CMD_PLACE_HOLDER_${getCounter()}%%%`;
     placeholders[key] = html;
     return key;
   });
@@ -128,7 +60,7 @@ function processInlineCommands(
     const heightAttr = h === '*' ? '' : `height="${h}"`;
     const html = `<img src="${src}" alt="${alt}" ${widthAttr} ${heightAttr} style="max-width:100%; vertical-align:middle;" />`;
     
-    const key = `%%%RNY_INLINE_CMD_${getCounter()}%%%`;
+    const key = `%%%CMD_PLACE_HOLDER_${getCounter()}%%%`;
     placeholders[key] = html;
     return key;
   });
@@ -170,7 +102,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   const lines = cleanedText.split('\n');
   let processedLines: string[] = [];
   
-  let inBlock = false;
+  let blockStack = [0];
   let problemBodyBuffer: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
@@ -178,7 +110,7 @@ export function parseMarkdown(markdown: string): ParseResult {
 
     // --- ブロック処理 ---
     if (inBlock) {
-      if (line.trim() === '---') {
+      if (line.trim() === '!#') {
       const answerLine = lines[i + 1] || "";
       i++; 
       const index = problemCounter++;
