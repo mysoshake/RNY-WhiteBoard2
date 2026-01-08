@@ -1,4 +1,4 @@
-// ./src/lib/core/preprocessor.ts
+// ./src/app/lib/core/preprocess/macro.ts
 
 import type { MacroDef } from "../core/type";
 
@@ -13,7 +13,7 @@ function createCommandRegex(commandName: string, argCount: number): RegExp {
   return new RegExp(pattern, 'g');
 }
 
-export function expandMacrosWithText(text: string, macros: MacroDef[]): string {
+export function expandMacros(text: string, macros: MacroDef[]): string {
   macros.forEach((macro) => {
     const regex = createCommandRegex(macro.name, macro.argCount);
     text = text.replace(regex, (match, ...args) => {
