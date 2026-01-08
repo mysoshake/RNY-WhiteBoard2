@@ -6,8 +6,8 @@ import type { MacroDef, ParseResult, ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
 import { expandMacrosWithText, extractMacros } from '../lib/macro/preprocessor';
 
-// インラインコマンドの処理
-function processInlineCommands(
+// コマンドの処理
+function processCommands(
   text: string, 
   macros: MacroDef[], 
   placeholders: { [key: string]: string },
@@ -122,8 +122,7 @@ export function parseMarkdown(markdown: string): ParseResult {
         encryptedText: obfuscateAnswer(answers[0] || "")
       });
 
-      // インライン処理
-      const textWithCommands = processInlineCommands(problemBodyBuffer.join('\n'), macros, placeholders, () => placeholderCounter++);
+      const textWithCommands = processCommands(problemBodyBuffer.join('\n'), macros, placeholders, () => placeholderCounter++);
       const problemHtml = marked.parse(textWithCommands, { async: false }) as string;
       
       const htmlBlock = Problem(index, problemHtml);
@@ -163,7 +162,7 @@ export function parseMarkdown(markdown: string): ParseResult {
         });
 
           // 1. インライン処理
-          const textWithCommands = processInlineCommands(questionText, macros, placeholders, () => placeholderCounter++);
+          const textWithCommands = processCommands(questionText, macros, placeholders, () => placeholderCounter++);
           // 2. Markdown変換
           const questionHtml = marked.parse(textWithCommands, { async: false }) as string;
           const htmlBlock = Problem(index, questionHtml);
@@ -188,7 +187,7 @@ export function parseMarkdown(markdown: string): ParseResult {
       const regex = new RegExp(`^${box.tag}\\s+(.*)`);
       const match = line.match(regex);
       if (match) {
-        const title = processInlineCommands(match[1], macros, placeholders, () => placeholderCounter++);
+        const title = processCommands(match[1], macros, placeholders, () => placeholderCounter++);
         processedLines.push(`<div class="box-common ${box.className}"><h3>${title}</h3></div>`);
         matchFound = true;
         break;
@@ -201,7 +200,7 @@ export function parseMarkdown(markdown: string): ParseResult {
 
   // ブロック外テキストのインライン処理
   const fullText = processedLines.join('\n');
-  const textWithCommands = processInlineCommands(fullText, macros, placeholders, () => placeholderCounter++);
+  const textWithCommands = processCommands(fullText, macros, placeholders, () => placeholderCounter++);
 
   let finalHtml = marked.parse(textWithCommands, { async: false }) as string;
   finalHtml = restorePlaceholders(finalHtml, placeholders);
