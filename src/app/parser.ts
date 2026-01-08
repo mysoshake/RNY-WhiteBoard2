@@ -4,7 +4,7 @@ import { marked } from 'marked';
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
 import type { MacroDef, ParseResult, ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
-import { expandMacrosWithText } from '../lib/macro/preprocessor';
+import { expandMacrosWithText, extractMacros } from '../lib/macro/preprocessor';
 
 // インラインコマンドの処理
 function processInlineCommands(

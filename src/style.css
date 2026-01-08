@@ -53,8 +53,14 @@ body.drawer-open {
 .result-msg { font-weight: bold; }
 
 /* --- 汎用ボックス --- */
+h1 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 2.0em; }
+h2 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.8em; }
+h3 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.8em; }
+h4 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.4em; }
+h5 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.2em; }
+h6 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.1em; }
 .box-common { padding: 15px; margin: 20px 0; border-radius: 6px; border-left: 6px solid gray; }
-.box-common h3 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.1em; }
+.box-common h3 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.6em; }
 .box-ex { background-color: #e1f5fe; border-color: #03a9f4; }
 .box-pr { background-color: #fffde7; border-color: #ffeb3b; }
 .box-as { background-color: #ffebee; border-color: #f44336; }
