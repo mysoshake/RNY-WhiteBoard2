@@ -21,6 +21,7 @@ body.drawer-open {
     margin-right: 300px; /* ドロワーの幅だけ右に余白を作る＝全体が左に寄る */
 }
 
+
 .container-prev,
 .container {
     max-width: 800px;
@@ -40,6 +41,62 @@ body.drawer-open {
     margin: 0;
 }
 
+/* --- 基本設定 ---*/
+h1, h2, h3, h4, h5, h6 {
+    margin: 10px 0 10px 0;
+    width: 95%;
+}
+h1 {
+    margin-left: 0px;
+    font-size: 2.0em;
+    border: 8px solid;
+    border-top-color:    rgb(170, 200, 200);
+    border-left-color:   rgb(150, 180, 180);
+    border-right-color:  rgb(090, 110, 110);
+    border-bottom-color: rgb(050, 070, 070);
+}
+h2 {
+    margin-top:  10px;
+    margin-left: 4px;
+    font-size: 1.8em;
+    padding-left: 10px;
+    background-color: red;
+}
+h3 {
+    margin-left: 8px;
+    font-size: 1.6em;
+    padding-left: 10px;
+    border-top: 1px solid gray;
+    border-right: 1px solid gray;
+    border-left: 10px solid gray;
+    border-bottom: 3px solid gray;
+}
+h4 {
+    margin-left: 6px;
+    font-size: 1.4em;
+}
+h5 {
+    margin-left: 8px;
+    font-size: 1.2em;
+}
+h6 {
+    margin-left:10px;
+    font-size: 1.1em;
+}
+
+/* 引用文 */
+blockquote {
+    font-style: italic;
+    border-left: 5px solid #0008;
+    border-top: 1px solid #0008;
+    border-bottom: 1px solid #0008;
+    padding: 10px;
+    margin: 20px 0;
+    background-color: #f7f7f7a7;
+}
+
+
+
 /* --- 問題 (#pb) --- */
 .problem-container { 
     border: 2px solid #007bff; padding: 15px; margin: 25px 0; 
@@ -52,23 +109,21 @@ body.drawer-open {
 .check-btn:disabled { background: #ccc; cursor: not-allowed; }
 .result-msg { font-weight: bold; }
 
-/* --- 汎用ボックス --- */
-h1, h2, h3, h4, h5, h6 {
-    margin: 0 0 10px 0;
-    margin-right: auto ;
-    border-bottom: 4px solid rgb(0,1,1);
-    padding-bottom: 5px;
-    width: 95%;
-}
-h1 { font-size: 2.0em; }
-h2 { font-size: 1.8em; }
-h3 { font-size: 1.8em; }
-h4 { font-size: 1.4em; }
-h5 { font-size: 1.2em; }
-h6 { font-size: 1.1em; }
 
-.box-common { padding: 15px; margin: 20px 0; border-radius: 6px; border-left: 6px solid gray; }
-.box-common h3 { margin: 0 0 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-size: 1.6em; }
+/* --- 汎用ボックス --- */
+.box-common {
+    padding: 0px 5px;
+    margin: 10px 0;
+    margin-left: 4px;
+    border-radius: 4px;
+    border-left: 6px solid gray;
+}
+.box-common h2 {
+    margin: 0 10px 0px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding-bottom: 5px;
+    font-size: 1.6em;
+}
 .box-ex { background-color: #e1f5fe; border-color: #03a9f4; }
 .box-pr { background-color: #fffde7; border-color: #ffeb3b; }
 .box-as { background-color: #ffebee; border-color: #f44336; }
