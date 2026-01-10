@@ -41,10 +41,15 @@ body.drawer-open {
     margin: 0;
 }
 
+/* --- ゲートシステム --- */
+.is-locked { display: none !important; }
+
 /* --- 基本設定 ---*/
 h1, h2, h3, h4, h5, h6 {
     margin: 10px 0 10px 0;
-    width: 95%;
+    padding-left: 10px;
+    width: auto;
+    margin-right: auto;
 }
 h1 {
     margin-left: 0px;
@@ -56,15 +61,17 @@ h1 {
     border-bottom-color: rgb(050, 070, 070);
 }
 h2 {
-    margin-top:  10px;
+    margin-top:  20px;
     margin-left: 4px;
     font-size: 1.8em;
     padding-left: 10px;
-    background-color: red;
+    background-color: rgba(255, 0, 0, 0);
 }
 h3 {
+    margin-top: 20px;
     margin-left: 8px;
-    font-size: 1.6em;
+    margin-right: 0;
+    font-size: 1.7em;
     padding-left: 10px;
     border-top: 1px solid gray;
     border-right: 1px solid gray;
@@ -72,16 +79,22 @@ h3 {
     border-bottom: 3px solid gray;
 }
 h4 {
-    margin-left: 6px;
-    font-size: 1.4em;
+    margin-top: 10px;
+    margin-left: 16px;
+    font-size: 1.6em;
+    padding-left: 14px;
+    border-bottom: 6px double gray;
 }
 h5 {
-    margin-left: 8px;
-    font-size: 1.2em;
+    margin-top: 10px;
+    margin-left: 24px;
+    font-size: 1.5em;
+    border-bottom: 3px solid gray;
 }
 h6 {
-    margin-left:10px;
-    font-size: 1.1em;
+    margin-top: 10px;
+    margin-left: 28px;
+    font-size: 1.4em;
 }
 
 /* 引用文 */
@@ -95,7 +108,20 @@ blockquote {
     background-color: #f7f7f7a7;
 }
 
-
+/* --- 汎用ボックス --- */
+.box-common {
+    margin: 20px 0px 10px 0px;
+    padding: 10px 5px;
+    border-radius: 8px;
+    border-left: 10px solid gray;
+}
+.box-common h2 {
+    margin: 0;
+}
+.box-ex { background-color: #e1f5fe; border-color: #03a9f4; }
+.box-pr { background-color: #fffde7; border-color: #ffeb3b; }
+.box-as { background-color: #ffebee; border-color: #f44336; }
+.box-eg { background-color: #f3e5f5; border-color: #9c27b0; }
 
 /* --- 問題 (#pb) --- */
 .problem-container { 
@@ -108,29 +134,6 @@ blockquote {
 .check-btn { padding: 8px 16px; font-size: 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
 .check-btn:disabled { background: #ccc; cursor: not-allowed; }
 .result-msg { font-weight: bold; }
-
-
-/* --- 汎用ボックス --- */
-.box-common {
-    padding: 0px 5px;
-    margin: 10px 0;
-    margin-left: 4px;
-    border-radius: 4px;
-    border-left: 6px solid gray;
-}
-.box-common h2 {
-    margin: 0 10px 0px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    padding-bottom: 5px;
-    font-size: 1.6em;
-}
-.box-ex { background-color: #e1f5fe; border-color: #03a9f4; }
-.box-pr { background-color: #fffde7; border-color: #ffeb3b; }
-.box-as { background-color: #ffebee; border-color: #f44336; }
-.box-eg { background-color: #f3e5f5; border-color: #9c27b0; }
-
-/* --- ゲートシステム --- */
-.is-locked { display: none !important; }
 
 /* Essay用スタイル */
 .essay-container { 
