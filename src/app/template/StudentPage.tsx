@@ -29,6 +29,7 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
     <html lang="ja">
       <head>
         <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>授業資料</title>
         <style dangerouslySetInnerHTML={{ __html: cssString }} />
         {/* MathJax設定(str)と読み込み(CDN) */}
