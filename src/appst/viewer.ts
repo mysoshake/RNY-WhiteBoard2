@@ -171,14 +171,20 @@ function initStudentSystem() {
 
     const type = container.getAttribute('data-type');
 
-    const input = container.querySelector('.student-input, .essay-input-text') as HTMLInputElement | HTMLTextAreaElement;
+    const input = container.querySelector('.student-input, .essay-student-input') as HTMLInputElement | HTMLTextAreaElement;
     const btn = container.querySelector('.check-btn, .essay-submit-btn') as HTMLButtonElement;
     const msg = container.querySelector('.result-msg') as HTMLSpanElement;
 
-    if (!input || !btn || !msg) return;
+    if (!input || !btn || !msg) {
+      if(!input) console.error("input(.student-input, .essay-student-input) が見つかりません");
+      if(!btn) console.error("btn(.check-btn, .essay-submit-btn) が見つかりません");
+      if(!msg) console.error("msg(.result-msg) が見つかりません");
+      return;
+    }
     
     // 回答処理
     const handleAnswer = (val: string, isRestoreMode = false) => {
+      console.log('btn clicked !!');
       if (type === 'essay') {
         if (!isRestoreMode && val.length === 0) {
           alert("内容を入力してください");
@@ -202,42 +208,41 @@ function initStudentSystem() {
         }
         return;
       }
+      else {
+        // Quiz
+        const hash = simpleHash(val);
+        const isCorrect = data.correctHashes.indexOf(hash) !== -1;
 
-      // Quiz
-      const hash = simpleHash(val);
-      const isCorrect = data.correctHashes.indexOf(hash) !== -1;
-
-      if (!isRestoreMode) {
-        recordLog('answer', `Question ${index + 1} attempt`, { isCorrect });
-      }
-
-      if (isCorrect) {
-        const ans = deobfuscateAnswer(data.encryptedText);
-        msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
-        input.disabled = true;
-        btn.disabled = true;
-        
         if (!isRestoreMode) {
-          progress.answers[index] = {
-            userAnswer: val,
-            isCorrect: true,
-            timestamp: new Date().toISOString()
-          };
-          addAnswerToDrawer(index, ans);
-          updateGateVisibility();
-          saveToStorage();
+          recordLog('answer', `Question ${index + 1} attempt`, { isCorrect });
         }
-      } else {
-        msg.innerHTML = `<span style="color:red">不正解</span>`;
-        if (!isRestoreMode) {
-          progress.answers[index] = { userAnswer: val, isCorrect: false, timestamp: new Date().toISOString() };
-          saveToStorage();
+
+        if (isCorrect) {
+          const ans = deobfuscateAnswer(data.encryptedText);
+          msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
+          input.disabled = true;
+          btn.disabled = true;
+          
+          if (!isRestoreMode) {
+            progress.answers[index] = {
+              userAnswer: val,
+              isCorrect: true,
+              timestamp: new Date().toISOString()
+            };
+            addAnswerToDrawer(index, ans);
+            updateGateVisibility();
+            saveToStorage();
+          }
+        } else {
+          msg.innerHTML = `<span style="color:red">不正解</span>`;
+          if (!isRestoreMode) {
+            progress.answers[index] = { userAnswer: val, isCorrect: false, timestamp: new Date().toISOString() };
+            saveToStorage();
+          }
         }
       }
     };
-
     btn.addEventListener('click', () => {
-      console.log('btn clicked !!');
       handleAnswer(input.value.trim());
     });
   });

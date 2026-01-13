@@ -4,7 +4,7 @@ import React, { type FunctionComponent, useState, useEffect, useRef } from 'reac
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseMarkdown } from './parser';
 import { StudentPage } from './template/StudentPage';
-import { STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY } from '../lib/core/constant';
+import { IS_DEBUG_MODE, STUDENT_MAIN_PATH, STUDENT_MAIN_REPOSITORY } from '../lib/core/constant';
 import { MarkdownEditor } from './component/MarkdownEditor';
 
 import './App.css'; 
@@ -171,7 +171,10 @@ const App: FunctionComponent = () => {
     <div className="app-container">
       <style>{studentCssString}</style>
       <header className="app-header">
-        <h1 className="app-header-title">授業資料作成ツール</h1>
+        {IS_DEBUG_MODE ?
+          <h1 className="app-header-title debug">授業資料作成ツール（でばっぐ）</h1> :
+          <h1 className="app-header-title">授業資料作成ツール</h1> 
+        }
         <div>
           JSファイル パス: 
           <input 

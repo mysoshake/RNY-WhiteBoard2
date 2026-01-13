@@ -18,7 +18,8 @@ const highlight = (text: string) => {
   // コマンド (#pb, #ex など) -> 青色
   html = html.replace(/(^|\n)(#(pb|ex|pr|as|eg|es).*)/g, '$1<span style="color:blue; font-weight:bold;">$2</span>');
   // 見出し (# タイトル) -> 緑色
-  html = html.replace(/(^|\n)(#+ .*)/g, '$1<span style="color:green; font-weight:bold;">$2</span>');
+  // html = html.replace(/(#{1,6}\s+.*)/g, '<span style="font-weight:bold;">$1</span>');
+  html = html.replace(/(^|\n)(#{1,6}.*)/g, '$1<span style="color:green; font-weight:bold;">$2</span>');
   // インラインコマンド (@red{}, \def{}) -> 紫色
   html = html.replace(/(@\w+|\\def)/g, '<span style="color:purple;">$1</span>');
   // 1行内のソースコード -> オレンジ
@@ -29,8 +30,6 @@ const highlight = (text: string) => {
   html = html.replace(/((\$|\$\$|\\\\\[|\\\\\()([\s\S]*?)(\$|\$\$|\\\\\]|\\\\\)))/g, '<span style="color:#074;">$1</span>');
   
   // ===== 普通のMD記法===== 
-  // 見出し #, ##, ..., ###### 
-  html = html.replace(/(#{1,6}\s+.*)/g, '<span style="font-weight:bold;">$1</span>');
   // 太字 ** text **
   html = html.replace(/(\*\*.+\*\*)/g, '<span style="font-weight:bold;">$1</span>');
   // 取消 ~~ text ~~

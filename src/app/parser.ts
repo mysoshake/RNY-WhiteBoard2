@@ -139,12 +139,13 @@ export function parseMarkdown(markdown: string): ParseResult {
     else {
       // ボックス内で閉じ処理が必要
       if (shouldCloseBox && isInBox) {
-        const options = (line[i] + "")
+        const optionLine: string = line[i] + "";
+        console.log("オプション行", optionLine);
+        const options = optionLine
           .substring(3)
           .split('|')
           .map(a => a.trim())
           .filter(a => a);
-        console.log("オプション", options);
         
         switch (prevBoxType) {
           case "#pb": {
@@ -163,6 +164,7 @@ export function parseMarkdown(markdown: string): ParseResult {
             const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
+            console.log("PB オプション:", ...options);
             break;
           }
           case '#es': {
@@ -178,6 +180,7 @@ export function parseMarkdown(markdown: string): ParseResult {
             const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
+            console.log("ES オプション:", ...options);
             break;
           }
           case '#ex':
