@@ -35,7 +35,6 @@ function initStudentSystem() {
     
     // 内部データに保存
     progress.logs.push(log);
-    saveToStorage();
     
     // 開発者ツール用にも出力
     console.log(`[${log.timestamp}] [${type}] ${message}`, details || '');
@@ -46,66 +45,63 @@ function initStudentSystem() {
   */
   function saveToStorage(storageId: string = "") {
     try {
-        localStorage.setItem(STORAGE_KEY_PREFIX_PROGRESS + storageId, JSON.stringify(progress));
+      recordLog("system", "saveToStorage", `id=${storageId}`);
+      localStorage.setItem(STORAGE_KEY_PREFIX_PROGRESS + storageId, JSON.stringify(progress));
     } catch (e) {
-        console.warn("LocalStorage save failed", e);
+      console.warn("LocalStorage save failed", e);
     }
   }
     
-  recordLog('system', 'System Initialized', { problemCount: problemList.length });
+  recordLog('system', 'Logging System Initialized', { problemCount: problemList.length });
+  saveToStorage();
   
   /**
   * --- ゲートシステム ---
+  * コンテンツ内の全要素を走査し、未回答問題より後ろをすべて非表示にする
   */
   function updateGateVisibility() {
-    const problems = document.querySelectorAll('.problem-container');
-    let locked = false;
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) return;
 
-    problems.forEach((problemEl, index) => {
-      const container = problemEl as HTMLElement;
+    // main-content直下の要素をすべて取得
+    const elements = Array.from(mainContent.children) as HTMLElement[];
+    
+    let isGateOpen = true; // ゲートが開いているか（表示してよいか）
 
-      if (locked) {
-        container.classList.add('is-locked');
-        hideNextSiblings(container);
-        return;
-      }
+    elements.forEach((el) => {
+        // 保存エリアとフッターは別扱い（最後に判定）
+        if (el.id === 'save-area' || el.classList.contains('app-footer')) {
+            return;
+        }
 
-      const isSolved = progress.answers[index]?.isCorrect === true;
-      container.classList.remove('is-locked');
+        if (!isGateOpen) {
+            // ゲートが閉じた後はすべて非表示
+            el.classList.add('is-locked');
+            return;
+        }
 
-      if (!isSolved) {
-        locked = true;
-        hideNextSiblings(container);
-      } else {
-        showNextSiblings(container);
-      }
+        // ゲートが開いているなら表示
+        el.classList.remove('is-locked');
+
+        // 問題コンテナに出くわしたら、正解済みかチェック
+        if (el.classList.contains('problem-container')) {
+            const indexStr = el.getAttribute('data-index');
+            if (indexStr !== null) {
+                const index = parseInt(indexStr, 10);
+                const isSolved = progress.answers[index]?.isCorrect === true;
+                
+                // 未回答なら、ここでゲートを閉じる（この問題自体は表示されるが、次は非表示）
+                if (!isSolved) {
+                    isGateOpen = false;
+                }
+            }
+        }
     });
 
+    // 保存エリアの制御: 全ての問題が解かれていなくても表示
     const saveArea = document.getElementById('save-area');
     if (saveArea) {
-      if (locked) saveArea.classList.add('is-locked');
-      else saveArea.classList.remove('is-locked');
-    }
-  }
-  
-  function hideNextSiblings(el: HTMLElement) {
-    let next = el.nextElementSibling as HTMLElement;
-    while (next) {
-      if (next.id !== 'save-area' && !next.classList.contains('app-footer')) {
-         next.classList.add('is-locked');
-      }
-      next = next.nextElementSibling as HTMLElement;
-    }
-  }
-
-  function showNextSiblings(el: HTMLElement) {
-    let next = el.nextElementSibling as HTMLElement;
-    while (next) {
-      if (next.classList.contains('problem-container')) break;
-      if (next.id === 'save-area') break;
-      if (next.classList.contains('app-footer')) break;
-      next.classList.remove('is-locked');
-      next = next.nextElementSibling as HTMLElement;
+      saveArea.classList.remove('is-locked');
     }
   }
 
@@ -130,8 +126,8 @@ function initStudentSystem() {
   }
 
   /**
-   * 解答リストへの追加処理
-   */
+  * 解答リストへの追加処理
+  */
   function addAnswerToDrawer(index: number, answerText: string) {
       if (!drawerList) return;
       // 重複チェック
@@ -151,13 +147,15 @@ function initStudentSystem() {
       }
 
     const item = document.createElement('div');
-    item.className = 'drawer-item';
-    item.id = `log-ans-${index}`; // IDを付与して重複防止
-    item.innerHTML = `
-      <div class="drawer-item-q">${questionSnippet}</div>
-      <div class="drawer-item-a">${answerText}</div>
-    `;
-    drawerList.appendChild(item);
+    if (item) {
+      item.className = 'drawer-item';
+      item.id = `log-ans-${index}`; // IDを付与して重複防止
+      item.innerHTML = `
+        <div class="drawer-item-q">${questionSnippet}</div>
+        <div class="drawer-item-a">${answerText}</div>
+      `;
+      drawerList.appendChild(item);
+    }
     drawerList.scrollTop = drawerList.scrollHeight;
   }
 
@@ -182,17 +180,28 @@ function initStudentSystem() {
       return;
     }
     
+    // 考察(es)が未保存かどうか
+    if (type === 'essay') {
+        input.addEventListener('input', () => {
+            // 内容が変わったらボタンを有効化＆見た目変更
+            btn.disabled = false;
+            btn.textContent = "保存する（未保存）";
+            btn.style.backgroundColor = "#d9534f";
+            msg.innerHTML = ""; // メッセージクリア
+        });
+    }
+    
     // 回答処理
     const handleAnswer = (val: string, isRestoreMode = false) => {
-      console.log('btn clicked !!');
       if (type === 'essay') {
         if (!isRestoreMode && val.length === 0) {
           alert("内容を入力してください");
           return;
         }
         msg.innerHTML = `<span style="color:green">記録しました</span>`;
-        input.disabled = true;
-        btn.disabled = true;
+        input.disabled = false;
+        btn.disabled = false;
+        btn.style.backgroundColor = "";
         btn.textContent = "記録済み";
 
         if (!isRestoreMode) {
@@ -201,12 +210,10 @@ function initStudentSystem() {
             isCorrect: true,
             timestamp: new Date().toISOString()
           };
-          recordLog('answer', `Essay ${index + 1} submitted`);
           addAnswerToDrawer(index, "(記述済み)");
+          recordLog('answer', `Essay ${index + 1} submitted/updated`);
           updateGateVisibility();
-          saveToStorage();
         }
-        return;
       }
       else {
         // Quiz
@@ -231,16 +238,16 @@ function initStudentSystem() {
             };
             addAnswerToDrawer(index, ans);
             updateGateVisibility();
-            saveToStorage();
           }
         } else {
           msg.innerHTML = `<span style="color:red">不正解</span>`;
           if (!isRestoreMode) {
             progress.answers[index] = { userAnswer: val, isCorrect: false, timestamp: new Date().toISOString() };
-            saveToStorage();
           }
         }
       }
+      // 念のためにここで保存
+      saveToStorage();
     };
     btn.addEventListener('click', () => {
       handleAnswer(input.value.trim());
@@ -261,10 +268,12 @@ function initStudentSystem() {
       if (!progress.studentId || !progress.name) {
         alert("学籍番号と氏名を入力してください");
         recordLog('error', 'Save attempt failed: Missing ID or Name');
+        saveToStorage();
         return;
       }
 
       recordLog('system', 'Progress saved to JSON file');
+      saveToStorage();
       const jsonStr = JSON.stringify(progress, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       
@@ -281,7 +290,11 @@ function initStudentSystem() {
   */
   function restoreProgress(storageId: string = "") {
     const saved = localStorage.getItem(STORAGE_KEY_PREFIX_PROGRESS + storageId);
-    if (!saved) return;
+    console.log("データ復元中...");
+    if (!saved) {
+      console.info("保存されたデータ：なし");
+      return;
+    }
       
     try {
       const savedData = JSON.parse(saved) as StudentProgress;
@@ -295,11 +308,18 @@ function initStudentSystem() {
       // Logs復元
       if (Array.isArray(savedData.logs)) {
         progress.logs = savedData.logs;
+        recordLog("system", "ログを復元", ...progress.logs);
       }
-
+      
+      if(!savedData.answers) {
+        console.info("答えのデータ: なし");
+      }
+      
       // 回答状況の復元
       if (savedData.answers) {
         progress.answers = savedData.answers;
+        console.info("回答状況の復元:", savedData.answers);
+        
         
         Object.keys(savedData.answers).forEach((key) => {
           const idx = parseInt(key, 10);
@@ -315,6 +335,12 @@ function initStudentSystem() {
             const msg = container.querySelector('.result-msg') as HTMLSpanElement;
             const type = container.getAttribute('data-type') || 'quiz';
             const problemData = problemList[idx];
+            
+            if (!input || !btn || !msg) {
+              if(!input) console.error("input(.student-input, .essay-student-input) が見つかりません");
+              if(!btn) console.error("btn(.check-btn, .essay-submit-btn) が見つかりません");
+              if(!msg) console.error("msg(.result-msg) が見つかりません");
+            }
 
             if (input && btn && msg) {
               input.value = ansData.userAnswer;
@@ -322,12 +348,18 @@ function initStudentSystem() {
               btn.disabled = true;
               
               if (type === 'essay') {
-                msg.innerHTML = `<span style="color:green">記録しました</span>`;
-                btn.textContent = "記録済み";
+                // エッセイは編集可能にしておく
+                msg.innerHTML = `<span style="color:green">保存済み</span>`;
+                btn.textContent = "保存済み";
+                input.disabled = false; 
+                btn.disabled = false;
                 addAnswerToDrawer(idx, "(記述済み)");
               } else if (type === 'quiz') {
+                // クイズはロック
                 const ansText = deobfuscateAnswer(problemData.encryptedText);
                 msg.innerHTML = `<span style="color:blue">正解! (${ansText})</span>`;
+                input.disabled = true;
+                btn.disabled = true;
                 addAnswerToDrawer(idx, ansText);
               }
             }

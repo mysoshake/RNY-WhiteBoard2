@@ -54,7 +54,7 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
 
           <div id="save-area" className="">
             <h3>学習の記録</h3>
-            <p><small>すべての課題を完了すると保存できます</small></p>
+            <p><small>提出用のデータをここからダウンロードしましょう</small></p>
             <label>学籍番号: <input type="text" id="student-id" /></label>
             <label>氏名: <input type="text" id="student-name" /></label>
             <button id="save-btn">学習データを保存する</button>
