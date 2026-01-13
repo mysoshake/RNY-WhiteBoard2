@@ -51,7 +51,7 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
           {/* コンテンツ埋め込み */}
           <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
 
-          <div id="save-area" className="is-locked">
+          <div id="save-area" className="">
             <h3>学習の記録</h3>
             <p><small>すべての課題を完了すると保存できます</small></p>
             <label>学籍番号: <input type="text" id="student-id" /></label>

@@ -23,8 +23,8 @@ function initStudentSystem() {
   };
   
   /**
-   * ログ用関数
-   */
+  * ログ用関数
+  */
   function recordLog(type: ActionLog['type'], message: string, details?: any) {
     const log: ActionLog = {
         timestamp: new Date().toISOString(),
@@ -42,8 +42,8 @@ function initStudentSystem() {
   }
   
   /**
-   * --- ストレージ保存 ---
-   */
+  * --- ストレージ保存 ---
+  */
   function saveToStorage(storageId: string = "") {
     try {
         localStorage.setItem(STORAGE_KEY_PREFIX_PROGRESS + storageId, JSON.stringify(progress));
@@ -55,8 +55,8 @@ function initStudentSystem() {
   recordLog('system', 'System Initialized', { problemCount: problemList.length });
   
   /**
-   * --- ゲートシステム ---
-   */
+  * --- ゲートシステム ---
+  */
   function updateGateVisibility() {
     const problems = document.querySelectorAll('.problem-container');
     let locked = false;
@@ -171,16 +171,14 @@ function initStudentSystem() {
 
     const type = container.getAttribute('data-type');
 
-    const input = container.querySelector('.student-input, .student-essay-input') as HTMLInputElement | HTMLTextAreaElement;
-    const btn = container.querySelector('.check-btn') as HTMLButtonElement;
+    const input = container.querySelector('.student-input, .essay-input-text') as HTMLInputElement | HTMLTextAreaElement;
+    const btn = container.querySelector('.check-btn, .essay-submit-btn') as HTMLButtonElement;
     const msg = container.querySelector('.result-msg') as HTMLSpanElement;
 
     if (!input || !btn || !msg) return;
     
-    
-    
-  // 回答処理
-  const handleAnswer = (val: string, isRestoreMode = false) => {
+    // 回答処理
+    const handleAnswer = (val: string, isRestoreMode = false) => {
       if (type === 'essay') {
         if (!isRestoreMode && val.length === 0) {
           alert("内容を入力してください");
@@ -210,7 +208,7 @@ function initStudentSystem() {
       const isCorrect = data.correctHashes.indexOf(hash) !== -1;
 
       if (!isRestoreMode) {
-          recordLog('answer', `Question ${index + 1} attempt`, { isCorrect });
+        recordLog('answer', `Question ${index + 1} attempt`, { isCorrect });
       }
 
       if (isCorrect) {
@@ -239,6 +237,7 @@ function initStudentSystem() {
     };
 
     btn.addEventListener('click', () => {
+      console.log('btn clicked !!');
       handleAnswer(input.value.trim());
     });
   });
@@ -273,12 +272,12 @@ function initStudentSystem() {
   }
   
   /** 
-   * --- 復元処理 (Restore) ---
-   */
+  * --- 復元処理 (Restore) ---
+  */
   function restoreProgress(storageId: string = "") {
     const saved = localStorage.getItem(STORAGE_KEY_PREFIX_PROGRESS + storageId);
     if (!saved) return;
-
+      
     try {
       const savedData = JSON.parse(saved) as StudentProgress;
       
@@ -296,7 +295,7 @@ function initStudentSystem() {
       // 回答状況の復元
       if (savedData.answers) {
         progress.answers = savedData.answers;
-      
+        
         Object.keys(savedData.answers).forEach((key) => {
           const idx = parseInt(key, 10);
           const ansData = savedData.answers[idx];
@@ -305,8 +304,9 @@ function initStudentSystem() {
           // UI操作
           const container = document.querySelector(`.problem-container[data-index="${idx}"]`);
           if (container) {
-            const input = container.querySelector('.essay-input-text, .essay-container') as HTMLInputElement;
-            const btn = container.querySelector('.check-btn') as HTMLButtonElement;
+            // student-input: クイズ用, essay-input-text: エッセイ用
+            const input = container.querySelector('.student-input, .essay-student-input') as HTMLInputElement | HTMLTextAreaElement;
+            const btn = container.querySelector('.check-btn, .essay-submit-btn') as HTMLButtonElement;
             const msg = container.querySelector('.result-msg') as HTMLSpanElement;
             const type = container.getAttribute('data-type') || 'quiz';
             const problemData = problemList[idx];
@@ -315,8 +315,6 @@ function initStudentSystem() {
               input.value = ansData.userAnswer;
               input.disabled = true;
               btn.disabled = true;
-              
-              console.log("btn clicked");
               
               if (type === 'essay') {
                 msg.innerHTML = `<span style="color:green">記録しました</span>`;

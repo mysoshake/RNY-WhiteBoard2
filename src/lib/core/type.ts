@@ -37,6 +37,10 @@ export interface MacroDef {
     template: string;  // 変換後のテンプレート ($1 $2...)
 }
 
+export interface PlaceHolder {
+  [key: string]: string
+}
+
 // 記録用データ構造
 export interface StudentProgress {
   studentId: string;

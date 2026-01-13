@@ -108,6 +108,11 @@ blockquote {
     background-color: #f7f7f7a7;
 }
 
+/* 太字用 */
+strong {
+    font-weight: 600;
+}
+
 /* --- 汎用ボックス --- */
 .box-common {
     margin: 20px 0px 10px 0px;
@@ -119,21 +124,65 @@ blockquote {
     margin: 0;
 }
 .box-ex { background-color: #e1f5fe; border-color: #03a9f4; }
-.box-pr { background-color: #fffde7; border-color: #ffeb3b; }
-.box-as { background-color: #ffebee; border-color: #f44336; }
 .box-eg { background-color: #f3e5f5; border-color: #9c27b0; }
+.box-pr { background-color: #fffde7; border-color: #ffeb3b; }
+.box-pb { background-color: #eafee1; border-color: #6ff403; }
+.box-as { background-color: #ffebee; border-color: #f44336; }
+.box-es { background-color: #e7fff1; border-color: #3bff9d; }
 
-/* --- 問題 (#pb) --- */
-.problem-container { 
-    border: 2px solid #007bff; padding: 15px; margin: 25px 0; 
-    border-radius: 8px; background-color: #f0f8ff; 
+.box-container {
+    padding: 0 15px;
+    margin: 5px 0;
+    border: 1px solid #f0f0f0;
+    border-radius: 3px;
 }
-.question-content p { margin: 0 0 10px 0; font-weight: bold; }
-.input-area { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
-.student-input { padding: 8px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
-.check-btn { padding: 8px 16px; font-size: 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-.check-btn:disabled { background: #ccc; cursor: not-allowed; }
-.result-msg { font-weight: bold; }
+
+/* pbとes用 */
+.question-content p {
+    margin: 0 0 10px 0;
+    font-weight: bold;
+}
+.result-msg {
+    font-weight: bold;
+}
+
+/* Problem用スタイル */
+.problem-container { 
+    padding: 15px;
+    margin: 25px 0; 
+    background-color: #e2ffe2; 
+    border: 2px solid #666;
+    border-radius: 4px;
+}
+.input-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+.student-input {
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex: 1;
+}
+.check-btn { 
+    padding: 8px 16px;
+    font-size: 1rem;
+    background: rgb(41, 85, 99);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.check-btn:hover {
+    background: rgb(74, 153, 177);
+}
+.check-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
 
 /* Essay用スタイル */
 .essay-container { 
@@ -142,7 +191,7 @@ blockquote {
     gap: 10px;
     margin-top: 15px;
 }
-.essay-input-text {
+.essay-student-input {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -152,7 +201,7 @@ blockquote {
     resize: vertical;
     min-height: 100px;
 }
-.essay-input-text:disabled {
+.essay-student-input:disabled {
     background-color: #f9f9f9;
     color: #666;
 }
@@ -162,10 +211,10 @@ blockquote {
     gap: 10px;
 }
 .essay-submit-btn {
-    background-color: #28a745; /* 記録ボタンは緑系 */
+    background-color: rgb(41, 99, 80);
 }
 .essay-submit-btn:hover {
-    background-color: #218838;
+    background-color: rgb(61, 146, 118);
 }
 .essay-submit-btn:disabled {
     background-color: #ccc;

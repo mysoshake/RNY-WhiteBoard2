@@ -1,6 +1,7 @@
 // ./src/app/lib/core/preprocess/macro.ts
 
-import type { MacroDef } from "../core/type";
+import { marked } from "marked";
+import type { MacroDef, PlaceHolder } from "../core/type";
 
 /**
  * 自作コマンドを正規表現で表す
@@ -12,21 +13,28 @@ function createCommandRegex(commandName: string, argCount: number): RegExp {
   for (let i = 0; i < argCount; i++) {
     pattern += '\\{([^}]*)\\}'; 
   }
-  return new RegExp(pattern, 'g');
+  return new RegExp("@" + pattern, 'g');
 }
 
-export function expandMacros(text: string, macros: MacroDef[]): string {
+
+export function expandMacros(text: string, macros: MacroDef[], getCounter: () => number, placeholders: PlaceHolder): string {
   macros.forEach((macro) => {
     const regex = createCommandRegex(macro.name, macro.argCount);
     text = text.replace(regex, (match, ...args) => {
       console.log(match, args);
       let result = macro.template;
       for (let i = 0; i < macro.argCount; i++) {
-        result = result.split(`$${i + 1}`).join(args[i]);
+        const replaced = expandMacros(args[i], macros, getCounter, placeholders);
+        result = result.split(`$${i + 1}`).join(replaced);
       }
+      result = marked.parseInline(result, { async: false }) as string;
+      const key = `%%%CMD_PLACE_HOLDER_${getCounter()}%%%`;
+      placeholders[key] = result;
+
       return result;
     });
   });
+  text = marked.parseInline(text, { async: false }) as string;
   return text;
 }
 
@@ -73,6 +81,7 @@ export function extractMacros(input: string): { cleanedText: string, macros: Mac
     // テンプレート部分を抽出
     const template = text.substring(contentStartIndex, endIndex);
     
+    console.log(`マクロ 定義: ${name}:[${argCount}]${template}`);
     macros.push({ name, argCount, template });
 
     // 元のテキストから定義部分を削除 (開始〜終了まで)
