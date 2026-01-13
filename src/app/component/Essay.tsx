@@ -1,6 +1,6 @@
 // .src/app/component/Essay.ts
 
-const Essay = (index: number, contentHtml: string): string => {
+const Essay = (index: number, contentHtml: string, firstRows: number=6): string => {
   
   
   return (
@@ -10,7 +10,7 @@ const Essay = (index: number, contentHtml: string): string => {
       ${contentHtml}
     </div>
     <div class="essay-container">
-      <textarea class="essay-student-input" placeholder="ここに考察や感想を入力してください..." rows="6"></textarea>
+      <textarea class="essay-student-input" placeholder="ここに考察や感想を入力してください..." rows="${firstRows}"></textarea>
       <div class="essay-controls">
           <button class="check-btn essay-submit-btn">記録して次へ</button>
           <span class="result-msg"></span>

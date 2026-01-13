@@ -139,18 +139,19 @@ export function parseMarkdown(markdown: string): ParseResult {
     else {
       // ボックス内で閉じ処理が必要
       if (shouldCloseBox && isInBox) {
+        const options = (line[i] + "")
+          .substring(3)
+          .split('|')
+          .map(a => a.trim())
+          .filter(a => a);
+        console.log("オプション", options);
+        
         switch (prevBoxType) {
           case "#pb": {
-            const answerLine = lines[i] || "";
             const index = problemCounter++;
-            const answers = answerLine
-              .substring(3)
-              .split('|')
-              .map(a => a.trim())
-              .filter(a => a);
+            const answers = options;
             const hashAnswers = answers.map(a => simpleHash(a));
             const encAnswer = obfuscateAnswer(answers[0] || "");
-            console.log("答えの行", answerLine);
             console.log("答えのリスト", answers);
             problemData.push({
               mode: 'quiz',
@@ -166,13 +167,14 @@ export function parseMarkdown(markdown: string): ParseResult {
           }
           case '#es': {
             const index = problemCounter++;
+            const rowsNum: number | undefined = Number.isInteger(options[0]) ? parseInt(options[0]) : undefined;
             problemData.push({
               mode: 'essay',
               correctHashes: [],
               encryptedText: ''
             });
-
-            const htmlBlock = Essay(index, boxBuffers.join(' <br>\n'));
+            
+            const htmlBlock = Essay(index, boxBuffers.join(' <br>\n'), rowsNum || 6);
             const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
