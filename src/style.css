@@ -129,6 +129,7 @@ strong {
 .box-pb { background-color: #eafee1; border-color: #6ff403; }
 .box-as { background-color: #ffebee; border-color: #f44336; }
 .box-es { background-color: #e7fff1; border-color: #3bff9d; }
+.box-cd { background-color: #ffe7ee; border-color: #ff3bc4; }
 
 .box-container {
     padding: 0 15px;
@@ -226,6 +227,29 @@ strong {
 }
 .essay-submit-btn:disabled {
     background-color: #ccc;
+}
+
+.code-container {
+    background-color: #222;
+    color: white;
+    font-size: small;
+    margin: 5px;
+}
+.code-title {
+    border-top:  2px double gray;
+    border-bottom: 2px double gray;
+    background-color: white;
+    padding: 0 10px;
+    font-size: medium;
+    font: 600;
+    color: black;
+}
+.code-content {
+    margin: 0px 10px;
+    padding: 5px 0px;
+    background-color: #222;
+    color: white;
+    font-size: medium;
 }
 
 /* --- 制御エリア --- */

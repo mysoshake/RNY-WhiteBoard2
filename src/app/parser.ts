@@ -7,6 +7,8 @@ import { expandMacros, extractMacros } from '../lib/preprocess/macro';
 import { NAMED_COLORS } from '../lib/core/colornames';
 import Essay from './component/Essay';
 import { marked } from 'marked';
+import { putLogApp } from '../lib/core/logger';
+import SourceCode from './component/SourceCode';
 
 /**
 * 独自マークダウン( + 通常のMD)を解析し、HTMLソースコードを生成する
@@ -90,6 +92,7 @@ export function parseMarkdown(markdown: string): ParseResult {
     '#pb', // 問題
     '#es', // 考察
     '#as', // 課題
+    '#cd', // ソースコード
   ];
   
   let isInBox: boolean = false;
@@ -100,7 +103,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   let boxBuffers: string[] = [];
 
   const problemData: ProblemItem[] = [];
-  let problemCounter = 0;
+  let boxPlaceholderCounter = 0;
   
   for (let i = 0; i < lines.length; i++) {
     const line: string = lines[i];
@@ -139,21 +142,22 @@ export function parseMarkdown(markdown: string): ParseResult {
     else {
       // ボックス内で閉じ処理が必要
       if (shouldCloseBox && isInBox) {
-        const optionLine: string = line[i] + "";
-        console.log("オプション行", optionLine);
-        const options = optionLine
+        const optionLine: string = lines[i] + "";
+        const hasOptions = optionLine.startsWith("!#");
+        const options = !hasOptions ? [] : optionLine
           .substring(3)
           .split('|')
           .map(a => a.trim())
           .filter(a => a);
+        if (hasOptions) putLogApp("system", "オプション:", options);
         
         switch (prevBoxType) {
           case "#pb": {
-            const index = problemCounter++;
+            const index = boxPlaceholderCounter++;
             const answers = options;
             const hashAnswers = answers.map(a => simpleHash(a));
             const encAnswer = obfuscateAnswer(answers[0] || "");
-            console.log("答えのリスト", answers);
+            putLogApp("debug", "答えのリスト", answers);
             problemData.push({
               mode: 'quiz',
               correctHashes: hashAnswers,
@@ -164,11 +168,11 @@ export function parseMarkdown(markdown: string): ParseResult {
             const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
-            console.log("PB オプション:", ...options);
+            putLogApp("debug", "PB オプション:", ...options);
             break;
           }
           case '#es': {
-            const index = problemCounter++;
+            const index = boxPlaceholderCounter++;
             const rowsNum: number | undefined = Number.isInteger(options[0]) ? parseInt(options[0]) : undefined;
             problemData.push({
               mode: 'essay',
@@ -180,7 +184,19 @@ export function parseMarkdown(markdown: string): ParseResult {
             const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
-            console.log("ES オプション:", ...options);
+            putLogApp("debug", "ES オプション:", ...options);
+            break;
+          }
+          case "#cd": {
+            const index = boxPlaceholderCounter++;
+            const title = options[0] + "";
+            const language = options[1] + "";
+            putLogApp("debug", `コードブロック${title}[${language}]`);
+            const htmlBlock = SourceCode(title, language, boxBuffers.join(' \n'));
+            const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
+            placeholders[placeholder] = htmlBlock;
+            processedLines.push(placeholder);
+            putLogApp("debug", "PB オプション:", ...options);
             break;
           }
           case '#ex':
@@ -198,7 +214,7 @@ export function parseMarkdown(markdown: string): ParseResult {
         processedLines.push(`</div>`);
       }
       else if (shouldCloseBox && !isInBox) {
-          console.error('ボックス外で !# が使われました');
+          putLogApp('error', 'ボックス外で !# が使われました');
           processedLines.push(`<span style="color:red"> ボックス外で !# が使われました </span>`);
       }
       // ボックス開始

@@ -2,6 +2,7 @@
 
 import { marked } from "marked";
 import type { MacroDef, PlaceHolder } from "../core/type";
+import { putLogApp } from "../core/logger";
 
 /**
  * 自作コマンドを正規表現で表す
@@ -21,7 +22,7 @@ export function expandMacros(text: string, macros: MacroDef[], getCounter: () =>
   macros.forEach((macro) => {
     const regex = createCommandRegex(macro.name, macro.argCount);
     text = text.replace(regex, (match, ...args) => {
-      console.log(match, args);
+      putLogApp("debug", match, args);
       let result = macro.template;
       for (let i = 0; i < macro.argCount; i++) {
         const replaced = expandMacros(args[i], macros, getCounter, placeholders);
@@ -74,14 +75,14 @@ export function extractMacros(input: string): { cleanedText: string, macros: Mac
     }
 
     if (endIndex === -1) {
-      console.warn(`Macro definition error: Unclosed brace for ${name}`);
+      putLogApp("warn", `Macro definition error: Unclosed brace for ${name}`);
       break; // 安全のため抜ける
     }
 
     // テンプレート部分を抽出
     const template = text.substring(contentStartIndex, endIndex);
     
-    console.log(`マクロ 定義: ${name}:[${argCount}]${template}`);
+    putLogApp("info", `マクロ 定義: ${name}:[${argCount}]${template}`);
     macros.push({ name, argCount, template });
 
     // 元のテキストから定義部分を削除 (開始〜終了まで)

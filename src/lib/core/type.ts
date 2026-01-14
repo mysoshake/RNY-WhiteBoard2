@@ -60,7 +60,7 @@ export interface StudentProgress {
 // ログ単体の定義
 export interface ActionLog {
     timestamp: string;
-    type: 'info' | 'answer' | 'system' | 'error' | 'debug';
+    type: 'info' | 'answer' | 'system' | 'warn' | 'error' | 'debug';
     message: string;
     details?: any;
 }

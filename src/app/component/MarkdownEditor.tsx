@@ -16,7 +16,9 @@ const highlight = (text: string) => {
   
   // =====オリジナルコマンド===== 
   // コマンド (#pb, #ex など) -> 青色
-  html = html.replace(/(^|\n)(#(pb|ex|pr|as|eg|es).*)/g, '$1<span style="color:blue; font-weight:bold;">$2</span>');
+  html = html.replace(/(^|\n)(#(pb|ex|pr|as|eg|es|cd).*)/g, '$1<span style="color:blue; font-weight:bold;">$2</span>');
+  // コマンド閉じ (!# ...) -> 青色
+  html = html.replace(/(^|\n)(!#.*)/g, '$1<span style="color:darkblue; font-weight:bold;">$2</span>');
   // 見出し (# タイトル) -> 緑色
   // html = html.replace(/(#{1,6}\s+.*)/g, '<span style="font-weight:bold;">$1</span>');
   html = html.replace(/(^|\n)(#{1,6}.*)/g, '$1<span style="color:green; font-weight:bold;">$2</span>');
