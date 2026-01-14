@@ -50,6 +50,7 @@ export interface StudentProgress {
       userAnswer: string;
       isCorrect: boolean;
       timestamp: string;
+      isSkipped?: boolean;
     }
   };
   logs: ActionLog[];
@@ -59,7 +60,7 @@ export interface StudentProgress {
 // ログ単体の定義
 export interface ActionLog {
     timestamp: string;
-    type: 'info' | 'answer' | 'system' | 'error';
+    type: 'info' | 'answer' | 'system' | 'error' | 'debug';
     message: string;
     details?: any;
 }

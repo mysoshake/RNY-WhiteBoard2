@@ -48,10 +48,12 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
             <p>プログラムファイルの読み込みに失敗しました。</p>
             <p>インターネット接続を確認するか、<br/>ファイル <code>student-viewer.js</code> が同じフォルダにあるか確認してください。</p>
         </div>
-        <div className="container" id="main-content">
+        <div className="container">
           {/* コンテンツ埋め込み */}
-          <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
-
+          <div id="main-content" dangerouslySetInnerHTML={{ __html: contentHtml }} />
+          <div id="status-content" className="status-container">
+            <div id="status-msg" className="status-msg">続きがあります。</div>
+          </div>
           <div id="save-area" className="">
             <h3>学習の記録</h3>
             <p><small>提出用のデータをここからダウンロードしましょう</small></p>

@@ -10,6 +10,7 @@ const Problem = (index: number, contentHtml: string): string => {
   <div class="input-area">
     <input type="text" class="student-input" placeholder="回答を入力">
     <button type="button" class="check-btn">判定</button>
+    <button type="button" class="check-btn skip-btn">諦める</button>
     <span class="result-msg"></span>
   </div>
 </div>
