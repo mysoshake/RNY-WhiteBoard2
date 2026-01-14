@@ -21,8 +21,8 @@ const SAMPLE_TEXT =
 ## 数式
 $ \\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} $
 $$ \\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} $$
-${"\\"}(\\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} \\)
-${"\\"}[\\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} \\]
+\ ( \\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} \\)
+\ [ \\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} \\]
 
 ### サブセクション
 #### サブサブセクション
@@ -42,6 +42,7 @@ ${"\\"}[\\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} \\]
 
 #as 課題:
 22 × 10 = ?
+!#
 
 - 箇条書き1
 - 箇条書き2
@@ -67,12 +68,13 @@ ${"\\"}[\\zeta(s) = \\sum_{n=1}^{\\infty} \\dfrac{1}{n^s} \\]
 この上下区切り線
 ---
 
-\`\`\`python
-# ソースコード with Python
+#cd ソースコード with Python
 usertext = int(input("text"))
-\`\`\`
+!# main.py | Python
 
-#pb 短めの問題文('答え') | 答え | ans | こたえ
+#pb タイトル問題
+問題文('答え')
+!# 答え | ans | こたえ
 
 #pb
 長い問題
@@ -82,8 +84,7 @@ usertext = int(input("text"))
 
 @red{ **赤太字になってほしい** }
 
----
-答え | ans | こたえ
+!# 答え | ans | こたえ
 
 \`source code\`
 
@@ -92,6 +93,7 @@ usertext = int(input("text"))
 ## 演習問題
 #pb 10 + 20 は？ | 30
 
+!#
 `;
 
 const App: FunctionComponent = () => {
