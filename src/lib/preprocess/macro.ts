@@ -35,7 +35,7 @@ export function expandMacros(text: string, macros: MacroDef[], getCounter: () =>
       return result;
     });
   });
-  text = marked.parseInline(text, { async: false }) as string;
+  // text = marked.parseInline(text, { async: false }) as string;
   return text;
 }
 
