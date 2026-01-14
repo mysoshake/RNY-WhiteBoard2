@@ -23,6 +23,10 @@ export function parseMarkdown(markdown: string): ParseResult {
   
   let placeholders: PlaceHolder = {}; 
   let placeholderCounter = 0;
+  /** プレースホルダーのindexを生成 */
+  const getCounter: (() => number) = () => {
+    return placeholderCounter++;
+  };
 
   let currentText = markdown;
   // [1] プリプロセス
@@ -74,10 +78,6 @@ export function parseMarkdown(markdown: string): ParseResult {
   // [2] インライン命令を処理
   
   // [2-1] 既存のインライン命令を生成
-  /** プレースホルダーのindexを生成 */
-  const getCounter: (() => number) = () => {
-    return placeholderCounter++;
-  };
   const inlineMacros: MacroDef[] = [];
   
   // [2-1-a] @色名{text} に色を付けるコマンド
