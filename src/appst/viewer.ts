@@ -481,6 +481,20 @@ function initStudentSystem() {
       // 念のためにここで保存
       saveToStorage();
     };
+    
+    if(input.tagName === 'input') {
+      const inputTag: HTMLInputElement = input as HTMLInputElement;
+      inputTag.addEventListener('keydown', (event) => {
+        // 日本語入力の確定操作(変換確定)でのEnterは無視する
+        if (event.isComposing) return;
+        
+        if (event.key === 'Enter') {
+          event.preventDefault(); // フォーム送信などを防ぐ
+          handleAnswer(input.value.trim()); // 解答ボタンと同じ処理を実行
+        }
+      });
+    }
+    
     btn.addEventListener('click', () => {
       handleAnswer(input.value.trim());
     });
