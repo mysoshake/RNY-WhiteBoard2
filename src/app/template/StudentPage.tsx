@@ -3,10 +3,13 @@
 import React from 'react';
 import type { ProblemProps } from '../../lib/core/type';
 
-export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl, cssString}) => {
+export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl, cssString, pageTitle}) => {
   const jsonString = JSON.stringify(problemData);
   
-// MathJaxの設定スクリプト
+  /* タイトルがないときはデフォルト */
+  const displayTitle = pageTitle || "授業資料";
+  
+  // MathJaxの設定スクリプト
   const mathJaxConfig = `
     window.MathJax = {
       tex: {
@@ -30,7 +33,7 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>授業資料</title>
+        <title>{displayTitle}</title>
         <style dangerouslySetInnerHTML={{ __html: cssString }} />
         {/* MathJax設定(str)と読み込み(CDN) */}
         <script dangerouslySetInnerHTML={{ __html: mathJaxConfig }} />

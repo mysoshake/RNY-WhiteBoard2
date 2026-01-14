@@ -7,6 +7,7 @@ import type { ProblemItem, StudentProgress, ActionLog } from "../lib/core/type";
 declare global {
   interface Window {
     PROBLEM_DATA_LIST: ProblemItem[];
+    LECTURE_TITLE: string;
   }
 }
 
@@ -15,7 +16,15 @@ function initStudentSystem() {
   const problemList = window.PROBLEM_DATA_LIST;
   if (!problemList) return;
 
-  const STORAGE_KEY_PREFIX_PROGRESS = 'rny_student_progress_';
+// タイトルを取得 (なければ default)
+  const lectureTitle = window.LECTURE_TITLE || "default";
+  
+  // キーに使用できない文字を除去したりエンコードしたりして安全な文字列にする
+  // (簡易的に英数字とハイフンアンダーバー以外を置換する例、あるいはそのまま使う)
+  const safeTitle = lectureTitle.replace(/[\s\/:*?"<>|]/g, "_");
+
+  // キーにタイトルを含める
+  const STORAGE_KEY_PROGRESS = `rny_student_progress_${safeTitle}`;  
   const progress: StudentProgress = {
     studentId: "",
     name: "",
@@ -62,10 +71,10 @@ function initStudentSystem() {
   /**
   * --- ストレージ保存 ---
   */
-  function saveToStorage(storageId: string = "") {
+  function saveToStorage() {
     try {
-      putLog("debug", false, "CALL::saveToStorage()", `id=${storageId}`);
-      localStorage.setItem(STORAGE_KEY_PREFIX_PROGRESS + storageId, JSON.stringify(progress));
+      putLog("debug", false, "CALL::saveToStorage()");
+      localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(progress));
     } catch (e) {
       console.warn("LocalStorage save failed", e);
     }
@@ -74,9 +83,9 @@ function initStudentSystem() {
   /** 
   * --- 復元処理 (Restore) ---
   */
-  function restoreProgress(storageId: string = "") {
+  function restoreProgress() {
     putLog("system", false, "CALL::restoreProgress()");
-    const saved = localStorage.getItem(STORAGE_KEY_PREFIX_PROGRESS + storageId);
+    const saved = localStorage.getItem(STORAGE_KEY_PROGRESS);
     putLog("debug", false, "データ復元中...");
     if (!saved) {
       putLog("info", false, "保存されたデータ：なし");

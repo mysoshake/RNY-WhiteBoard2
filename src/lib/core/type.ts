@@ -12,6 +12,7 @@ export interface ProblemProps {
   problemData: ProblemItem[];
   scriptUrl: string;
   cssString: string;
+  pageTitle: string;
 } 
 
 // MarkdownEditorで使う
@@ -26,15 +27,16 @@ export interface BoxParser {
 }
 
 export interface ParseResult {
-    html: string;
-    problemData: ProblemItem[];
+  html: string;
+  problemData: ProblemItem[];
+  title: string;
 }
 
 // マクロ定義用インターフェース
 export interface MacroDef {
-    name: string;      // コマンド名 (@cmd)
-    argCount: number;  // 引数の数
-    template: string;  // 変換後のテンプレート ($1 $2...)
+  name: string;      // コマンド名 (@cmd)
+  argCount: number;  // 引数の数
+  template: string;  // 変換後のテンプレート ($1 $2...)
 }
 
 export interface PlaceHolder {

@@ -4,8 +4,12 @@ const SourceCode = (title: string, language: string, contentHtml: string): strin
   return (
 `
 <div class="code-container">
-<div class="code-title">${title}</div>
-<div class="code-content"><pre class="line-numbers"><code class="language-${language}">${contentHtml}</code></pre></div>
+  <div class="code-title">
+    ${title}
+  </div>
+  <div class="code-content">
+    <pre class="line-numbers"><code class="language-${language}">${contentHtml}</code></pre>
+  </div>
 </div>
 `
   );

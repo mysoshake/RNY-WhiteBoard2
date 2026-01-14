@@ -141,7 +141,7 @@ const App: FunctionComponent = () => {
   
   // ダウンロード処理
   const handleDownload = () => {
-    const { html, problemData } = parseMarkdown(markdown);
+    const { html, problemData, title } = parseMarkdown(markdown);
     
     // 他のCSSを組み合わせるときはここに追記
     const combinedCssString = studentCssString;
@@ -153,6 +153,7 @@ const App: FunctionComponent = () => {
         problemData={problemData} 
         scriptUrl={scriptUrl}
         cssString={combinedCssString}
+        pageTitle={title}
       />
     );
 

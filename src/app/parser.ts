@@ -50,6 +50,26 @@ export function parseMarkdown(markdown: string): ParseResult {
   const {cleanedText , macros } = extractMacros(currentText);
   currentText = cleanedText;
   const userMacros = macros;
+
+  // [1-3] 画像ルートディレクトリ (\src) の解析
+  let imgRootPath = "";
+  // [1-3-a] \src{...} を検索してパスを取得
+  const srcMatch = currentText.match(/\\src\{([^}]*)\}/);
+  if (srcMatch) {
+    imgRootPath = srcMatch[1];
+    // パスの末尾にスラッシュがなければ追加する
+    if (imgRootPath && !imgRootPath.endsWith('/') && !imgRootPath.endsWith('\\')) {
+        imgRootPath += '/';
+    }
+    currentText = currentText.replace(/\\src\{[^}]*\}/g, '');
+  }
+  // [1-3-b] タイトル抽出
+  let documentTitle = "授業資料"; // タイトル用変数
+  const titleMatch = currentText.match(/\\title\{([^}]*)\}/);
+  if (titleMatch) {
+    documentTitle = titleMatch[1];
+    currentText = currentText.replace(/\\title\{[^}]*\}/g, '');
+  }
   
   // [2] インライン命令を処理
   
@@ -72,7 +92,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   inlineMacros.push({
     name: `img`,
     argCount: 4,
-    template: `<img src="$1" alt="$2" width=$3 height=$4 style="max-width:100%; vertical-align:middle;" />`
+    template: `<img src=${imgRootPath}"$1" alt="$2" width=$3 height=$4 style="max-width:100%; vertical-align:middle;" />`
   });
   
   // [2-2] インライン命令を展開
@@ -241,7 +261,8 @@ export function parseMarkdown(markdown: string): ParseResult {
 
   return {
     html: finalHtml,
-    problemData: problemData 
+    problemData: problemData, 
+    title: documentTitle
   };
 }
 
