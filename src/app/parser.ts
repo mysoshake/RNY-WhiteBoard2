@@ -196,7 +196,7 @@ export function parseMarkdown(markdown: string): ParseResult {
           case '#es': {
             const placeholderIndex = getPlaceholderCounter();
             const pbIndex = problemCounter++;
-            const rowsNum: number | undefined = Number.isInteger(options[0]) ? parseInt(options[0]) : undefined;
+            const rowsNum: number = +options[0];
             problemData.push({
               mode: 'essay',
               correctHashes: [],
@@ -242,6 +242,7 @@ export function parseMarkdown(markdown: string): ParseResult {
       }
       // ボックス開始
       if (shouldOpenBox) {
+        putLogApp('debug', "Open BOX", boxHead);
         processedLines.push(`<div class="box-common box-${nextBoxType.substring(1)}"><h2>${boxHead}</h2></div>
         <div class="box-container">`);
         boxBuffers = [];
