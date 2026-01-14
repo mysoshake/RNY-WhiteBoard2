@@ -24,7 +24,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   let placeholders: PlaceHolder = {}; 
   let placeholderCounter = 0;
   /** プレースホルダーのindexを生成 */
-  const getCounter: (() => number) = () => {
+  const getPlaceholderCounter: (() => number) = () => {
     return placeholderCounter++;
   };
 
@@ -42,7 +42,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   for (let iregex = 0; iregex < shouldPlaceholders.length; iregex++) {
     const regex = shouldPlaceholders[iregex];
     currentText = currentText.replace(regex, (match) => {
-      const index = getCounter();
+      const index = getPlaceholderCounter();
       const key = `%%%CMD_PLACE_HOLDER_${index}%%%`;
       placeholders[key] = match;
       return key;
@@ -99,7 +99,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   // [2-2] インライン命令を展開
   // 自作のマクロ(\defされた自作コマンド)を展開
   userMacros.push(...inlineMacros);
-  currentText = expandMacros(currentText, userMacros, getCounter, placeholders);
+  currentText = expandMacros(currentText, userMacros, getPlaceholderCounter, placeholders);
   
   // [3] ボックス命令
   // それぞれの行ごとに解析
@@ -124,7 +124,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   let boxBuffers: string[] = [];
 
   const problemData: ProblemItem[] = [];
-  let boxPlaceholderCounter = 0;
+  let problemCounter = 0;
   
   for (let i = 0; i < lines.length; i++) {
     const line: string = lines[i];
@@ -174,7 +174,8 @@ export function parseMarkdown(markdown: string): ParseResult {
         
         switch (prevBoxType) {
           case "#pb": {
-            const index = boxPlaceholderCounter++;
+            const placeholderIndex = getPlaceholderCounter();
+            const pbIndex = problemCounter++;
             const answers = options;
             const hashAnswers = answers.map(a => simpleHash(a));
             const encAnswer = obfuscateAnswer(answers[0] || "");
@@ -185,15 +186,16 @@ export function parseMarkdown(markdown: string): ParseResult {
               encryptedText: encAnswer
             });
 
-            const htmlBlock = Problem(index, boxBuffers.join(' <br>\n'));
-            const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
+            const htmlBlock = Problem(pbIndex, boxBuffers.join(' <br>\n'));
+            const placeholder = `%%%CMD_PLACE_HOLDER_${placeholderIndex}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
             putLogApp("debug", "PB オプション:", ...options);
             break;
           }
           case '#es': {
-            const index = boxPlaceholderCounter++;
+            const placeholderIndex = getPlaceholderCounter();
+            const pbIndex = problemCounter++;
             const rowsNum: number | undefined = Number.isInteger(options[0]) ? parseInt(options[0]) : undefined;
             problemData.push({
               mode: 'essay',
@@ -201,20 +203,20 @@ export function parseMarkdown(markdown: string): ParseResult {
               encryptedText: ''
             });
             
-            const htmlBlock = Essay(index, boxBuffers.join(' <br>\n'), rowsNum || 6);
-            const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
+            const htmlBlock = Essay(pbIndex, boxBuffers.join(' <br>\n'), rowsNum || 6);
+            const placeholder = `%%%CMD_PLACE_HOLDER_${placeholderIndex}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
             putLogApp("debug", "ES オプション:", ...options);
             break;
           }
           case "#cd": {
-            const index = boxPlaceholderCounter++;
+            const placeholderIndex = getPlaceholderCounter();
             const title = options[0] + "";
             const language = options[1] + "";
             putLogApp("debug", `コードブロック${title}[${language}]`);
             const htmlBlock = SourceCode(title, language, boxBuffers.join(' \n'));
-            const placeholder = `%%%CMD_PLACE_HOLDER_${index}%%%`;
+            const placeholder = `%%%CMD_PLACE_HOLDER_${placeholderIndex}%%%`;
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
             putLogApp("debug", "PB オプション:", ...options);
