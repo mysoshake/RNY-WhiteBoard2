@@ -42,7 +42,8 @@ export function parseMarkdown(markdown: string): ParseResult {
   for (let iregex = 0; iregex < shouldPlaceholders.length; iregex++) {
     const regex = shouldPlaceholders[iregex];
     currentText = currentText.replace(regex, (match) => {
-      const key = `%%%CMD_PLACE_HOLDER_${getCounter()}%%%`;
+      const index = getCounter();
+      const key = `%%%CMD_PLACE_HOLDER_${index}%%%`;
       placeholders[key] = match;
       return key;
     });
