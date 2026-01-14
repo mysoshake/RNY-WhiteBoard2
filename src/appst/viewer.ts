@@ -453,6 +453,7 @@ function initStudentSystem() {
           msg.innerHTML = `<span style="color:blue">正解! (${ans})</span>`;
           input.disabled = true;
           btn.disabled = true;
+          skipBtn.disabled = true;
           
           if (!isRestoreMode) {
             progress.answers[index] = {
