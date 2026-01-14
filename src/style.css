@@ -328,6 +328,22 @@ strong {
     font-weight: 500;
     color: darkred;
 }
+.progress-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7); 
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    pointer-events: auto; 
+    cursor: pointer; 
+    transition: opacity 0.3s ease;
+}
 
 /* --- フッター --- */
 .app-footer {

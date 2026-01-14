@@ -43,7 +43,11 @@ function initStudentSystem() {
   const idInput = document.getElementById('student-id') as HTMLInputElement;
   const nameInput = document.getElementById('student-name') as HTMLInputElement;
 
-
+  // 進捗表示用
+  const progressFloat = document.createElement('div');
+  progressFloat.className = 'progress-float';
+  document.body.appendChild(progressFloat);
+  
   // ========　関数たちの定義　=========
 
   /**
@@ -170,6 +174,26 @@ function initStudentSystem() {
     } catch (e) {
       
       putLog("error", false, "Restore failed", e);
+    }
+  }
+
+
+  /**
+  * 進捗表示を更新する関数
+  */
+  function updateProgressDisplay() {
+    const total = problemList.length;
+    // 正解(isCorrect) または スキップ(isSkipped) された数をカウント
+    const completed = Object.values(progress.answers).filter(
+        a => a && (a.isCorrect || a.isSkipped)
+    ).length;
+
+    progressFloat.textContent = `完了: ${completed} / ${total}`;
+    
+    // 全問完了したら色を変えるなどの演出も可能
+    if (completed === total) {
+        progressFloat.style.backgroundColor = "rgba(40, 167, 69, 0.9)"; // 緑色
+        progressFloat.textContent += " (All Clear!)";
     }
   }
   
@@ -307,6 +331,28 @@ function initStudentSystem() {
     });
   }
 
+  // --- 隠し機能: 7回クリックでリセット ---
+  let clickCount = 0;
+  let clickTimer: any;
+  progressFloat.addEventListener('click', () => {
+    clickCount++;
+    
+    // 連打が途切れたらカウンタをリセット (2秒)
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+
+    if (clickCount >= 7) {
+      if (confirm("【管理者機能】\n学習履歴（進捗データ）を削除しますか？\nページはリロードされます。")) {
+        // 保存されているデータを削除
+        localStorage.removeItem(STORAGE_KEY_PROGRESS);
+        alert("削除しました。");
+        location.reload();
+      }
+      clickCount = 0; // キャンセルされた場合もカウントはリセット
+    }
+  });
+
+
   // --- 問題ロジック ---
   const containers = document.querySelectorAll('.problem-container');
   containers.forEach((container) => {
@@ -362,6 +408,7 @@ function initStudentSystem() {
         putLog('answer', true, `Question ${index + 1} skipped`);
         addAnswerToDrawer(index, "(スキップ)");
         updateGateVisibility();
+        updateProgressDisplay();
         saveToStorage();
       });
     }
@@ -389,6 +436,7 @@ function initStudentSystem() {
           addAnswerToDrawer(index, "(記述済み)");
           putLog('answer', true, `Essay ${index + 1} submitted/updated`);
           updateGateVisibility();
+          updateProgressDisplay();
         }
       }
       else {
@@ -415,6 +463,7 @@ function initStudentSystem() {
             };
             addAnswerToDrawer(index, ans);
             updateGateVisibility();
+            updateProgressDisplay();
           }
         } else {
           msg.innerHTML = `<span style="color:red">不正解</span>`;
@@ -465,6 +514,8 @@ function initStudentSystem() {
   
   // ゲート更新 (復元された状態に基づいて開閉)
   updateGateVisibility();
+  // 進捗状況の更新
+  updateProgressDisplay();
   
   // システムログ
   putLog('system', true, 'System Loaded');
