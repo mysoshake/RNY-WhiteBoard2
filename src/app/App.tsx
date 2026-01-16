@@ -28,6 +28,9 @@ const SAMPLE_TEXT =
 # あいさつ
 ようこそ。
 
+長いものは変な位置でword-wrapされるようです。
+見た目と文字の位置がずれる場合があります。
+
 \\def{@greeting}[1]{<div style="color:red; background-color:lime;">こんにちは \\{1} さん</div>}
 @greeting{User}
 
