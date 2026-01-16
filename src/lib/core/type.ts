@@ -1,5 +1,7 @@
 // core/type.ts
 
+import { putLogApp } from "./logger";
+
 // 拡張されたデータ定義
 export interface ProblemItem {
   mode: 'quiz' | 'essay';
@@ -21,9 +23,40 @@ export interface EditorProps {
   onChange: (value: string) => void;
 }
 
-export interface BoxParser { 
-  prefix: string;
-  parse: (content: string) => string;
+/**
+* boxの共通処理
+*/
+export class BoxType {
+  public name: string;
+  public markSymbol: string;
+  public titleHead: string;
+  public holdPlace: boolean;
+  /* trueにすると parserを通さなくなります */
+  public rawText: boolean;
+  public createHeader: (head: string) => string;
+  public processContent: (lines: string[], options: string[]) => string;
+  public parser: (rawtext: string) => string;
+  
+  public constructor(name: string, titleHead: string, holdPlace: 'hold' | 'none' = 'none', useRawText: boolean = false) {
+    this.name = name;
+    this.markSymbol = "#" + name;
+    this.titleHead = titleHead;
+    this.holdPlace = (holdPlace === "hold");
+    this.rawText = useRawText;
+    this.createHeader = (head: string) => {
+      return `<div class="box-common box-${this.name}"><h2>${this.titleHead}:${head}</h2></div>
+        <div class="box-container">`
+    };
+    this.processContent = (lines: string[], options: string[]) => {
+      putLogApp("debug", `${this.name}ボックス:`, ...options);
+      const raw = this.parser(lines.join("\n"));
+      return raw;
+    };
+    this.parser = (rawtext: string) => {
+      return rawtext;
+    };
+  }
+  
 }
 
 export interface ParseResult {
@@ -37,6 +70,7 @@ export interface MacroDef {
   name: string;      // コマンド名 (@cmd)
   argCount: number;  // 引数の数
   template: string;  // 変換後のテンプレート ($1 $2...)
+  keepContent: boolean;
 }
 
 export interface PlaceHolder {

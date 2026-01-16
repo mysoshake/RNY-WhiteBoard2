@@ -22,12 +22,10 @@ const highlight = (text: string) => {
   // 見出し (# タイトル) -> 緑色
   // html = html.replace(/(#{1,6}\s+.*)/g, '<span style="font-weight:bold;">$1</span>');
   html = html.replace(/(^|\n)(#{1,6}.*)/g, '$1<span style="color:green; font-weight:bold;">$2</span>');
-  // インラインコマンド (@red{}) -> 紫色
-  html = html.replace(/(@(\w\W)+)/g, '<span style="color:purple;">$1</span>');
-  // システムコマンド (\def{@xx}[N]{ ... }) -> 紫色
-  html = html.replace(/(\\\\def\{@\w+\}\[(\d+)\]\{(.)*\})/g, '<span style="color:purple;">$1</span>');
-  // システムコマンド (\title{}, \src{}) -> 紫色
-  html = html.replace(/(\\\\(src|title)\{(.)*\})/g, '<span style="color:purple;">$1</span>');
+  // インラインコマンド (@red) -> 紫色
+  html = html.replace(/(@\w+)\{/g, '<span style="color:purple;">$1</span>{');
+  // システムコマンド (\def, \title \src) -> 紫色
+  html = html.replace(/(\\\\(def|src|title))/g, '<span style="color:purple;">$1</span>');
   // 1行内のソースコード -> オレンジ
   html = html.replace(/(`.+`)/g, '<span style="color:orange;">$1</span>');
   

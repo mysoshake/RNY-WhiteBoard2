@@ -5,20 +5,18 @@
     box-sizing: border-box;
 }
 
-/* --- 基本レイアウト --- */
 body {
-    font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    font-family: Meiryo, 'Times New Roman', Times, serif, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #dcdcdc; /* 背景グレー */
+    background-color: #dcdcdc;
     color: #333;
     line-height: 1.6;
-    /* ドロワー開閉時のアニメーション */
     transition: margin-right 0.3s ease;
 }
 
 body.drawer-open {
-    margin-right: 300px; /* ドロワーの幅だけ右に余白を作る＝全体が左に寄る */
+    margin-right: 300px;
 }
 
 
@@ -248,6 +246,15 @@ strong {
     margin: 0px 10px;
     padding: 5px 0px;
     background-color: #222;
+    color: white;
+    font-size: medium;
+}
+.code-inline {
+    margin: 0px 0px;
+    border: 10px;
+    border-radius: 3px;
+    padding: 5px 4px;
+    background-color: #400;
     color: white;
     font-size: medium;
 }

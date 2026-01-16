@@ -1,9 +1,9 @@
 // ./src/app/parser.ts
 
 import { simpleHash, obfuscateAnswer } from '../lib/core/cryption';
-import type { MacroDef, ParseResult, PlaceHolder, ProblemItem } from '../lib/core/type';
+import { BoxType, type MacroDef, type ParseResult, type PlaceHolder, type ProblemItem } from '../lib/core/type';
 import Problem from './component/Problem';
-import { expandMacros, extractMacros } from '../lib/preprocess/macro';
+import { extractMacros, macrosToHtml } from '../lib/preprocess/macro';
 import { NAMED_COLORS } from '../lib/core/colornames';
 import Essay from './component/Essay';
 import { marked } from 'marked';
@@ -37,6 +37,10 @@ export function parseMarkdown(markdown: string): ParseResult {
     /((\$\$|\\\[)([\s\S]*?)(\$\$|\\\]))/g,
     // インライン数式: $ ... $ または \( ... \)
     /((\$|\\\()([\s\S]*?)(\$|\\\)))/g,
+    // // ブロックコード: #cd タイトル  \n  ...  \n  !# ファイル名.py | Python
+    // /((#cd .*\n)([\s\S]*?)(!# .* $))/g,
+    // インラインコード: ` ... ` または @code{python}{ ... }
+    // /((`)([\s\S]*?)(`))/g,
   ];
   // 上のものから優先的に置き換える ($$ABC$$ が $__XYZ__$ になるのを防ぐ)
   for (let iregex = 0; iregex < shouldPlaceholders.length; iregex++) {
@@ -45,14 +49,16 @@ export function parseMarkdown(markdown: string): ParseResult {
       const index = getPlaceholderCounter();
       const key = `%%%CMD_PLACE_HOLDER_${index}%%%`;
       placeholders[key] = match;
+      putLogApp('debug', "マッチ:", match);
       return key;
     });
   }
+  putLogApp("debug", "事前に退避されたコマンド:", placeholders);
   
   // [1-2] マクロの読み出し
   // マクロの定義(\def ... )を切り出して記憶
-  // /def{@...}{} は消える
-  const {cleanedText , macros } = extractMacros(currentText);
+  // /def{@...}[ 0 ]{ ... } は消える
+  const { cleanedText , macros } = extractMacros(currentText);
   currentText = cleanedText;
   const userMacros = macros;
 
@@ -85,46 +91,118 @@ export function parseMarkdown(markdown: string): ParseResult {
   for(const colorName of NAMED_COLORS) {
     const name = colorName;
     const argCount = 1;
-    const template = `<span style="color:${colorName}">$1</span>`;
-    inlineMacros.push({ name, argCount, template });
+    const template = `<span style="color:${colorName}">\\{1}</span>`;
+    inlineMacros.push({ name, argCount, template, keepContent:false });
   }
 
   // [2-1-b] @img{リンク}{alt}{幅}{高}
   inlineMacros.push({
     name: `img`,
     argCount: 4,
-    template: `<img src=${imgRootPath}"$1" alt="$2" width=$3 height=$4 style="max-width:100%; vertical-align:middle;" />`
+    template: `<img src=${imgRootPath}"\\{1}" alt="\\{2}" width=\\{3} height=\\{4} style="max-width:100%; vertical-align:middle;" />`,
+    keepContent: false
   });
+
+  // [2-1-c] @code{言語名}{ ... }
+  inlineMacros.push({
+    name: `code`,
+    argCount: 2,
+    template: `<code class="code-inline" language="\\{1}">\\{2}</code>`,
+    keepContent: true
+  });
+  
+  let boxTypes: BoxType[] = [
+    new BoxType('ex', ' ', "none", false),
+    new BoxType('eg', ' ', "none", false),
+    new BoxType('pr', ' ', "none", false),
+    new BoxType('as', ' ', "none", false),
+    new BoxType('pb', ' ', "hold", false),
+    new BoxType('es', ' ', "hold", false),
+    new BoxType('cd', ' ', "hold", true ),
+  ];
   
   // [2-2] インライン命令を展開
   // 自作のマクロ(\defされた自作コマンド)を展開
   userMacros.push(...inlineMacros);
-  currentText = expandMacros(currentText, userMacros, getPlaceholderCounter, placeholders);
+  putLogApp('debug', "マクロ適用前 : ", currentText);
+  currentText = macrosToHtml(currentText, userMacros, getPlaceholderCounter, placeholders, boxTypes);
+  putLogApp('debug', "マクロ適用後 : ", currentText);
+  putLogApp('debug', "プレースホルダーたち : ", placeholders);
   
   // [3] ボックス命令
   // それぞれの行ごとに解析
   const lines = currentText.split('\n');
   /** それぞれの翻訳後の行 */
   let processedLines: string[] = []; 
-  const boxTypes = [
-    '#ex', // 説明
-    '#eg', // 例題
-    '#pr', // 練習
-    '#pb', // 問題
-    '#es', // 考察
-    '#as', // 課題
-    '#cd', // ソースコード
-  ];
   
+  const problemData: ProblemItem[] = [];
+  let problemCounter = 0;
+
+  const PB_BOX: BoxType = new BoxType('pb', '問題', 'hold', false);
+  PB_BOX.parser = (text) => {
+    return macrosToHtml(text, macros, getPlaceholderCounter, placeholders, boxTypes);
+  };
+  PB_BOX.processContent = (lines, options) => {
+    const pbIndex = problemCounter++;
+    const answers = options;
+    const hashAnswers = answers.map(a => simpleHash(a));
+    const encAnswer = obfuscateAnswer(answers[0] || "");
+    putLogApp("debug", "答えのリスト", answers);
+    problemData.push({
+      mode: 'quiz',
+      correctHashes: hashAnswers,
+      encryptedText: encAnswer
+    });
+    const inlined = marked.parseInline(lines.join(' <br>\n'), { async: false });
+    const htmlBlock = Problem(pbIndex, inlined);
+    putLogApp("debug", "PB オプション:", ...options);
+    return htmlBlock;
+  };
+  
+  const ES_BOX = new BoxType('es', '考察', 'hold', false);
+  ES_BOX.parser = (text) => {
+    return macrosToHtml(text, macros, getPlaceholderCounter, placeholders, boxTypes);
+  };
+  ES_BOX.processContent = (lines, options) => {
+    const pbIndex = problemCounter++;
+    const rowsNum: number = +options[0];
+    problemData.push({
+      mode: 'essay',
+      correctHashes: [],
+      encryptedText: ''
+    });
+    const inlined = marked.parseInline(lines.join(' <br>\n'), { async: false });
+    const htmlBlock = Essay(pbIndex, inlined, rowsNum || 6);
+    putLogApp("debug", "ES オプション:", ...options);
+    return htmlBlock;
+  };
+  
+  const CD_BOX: BoxType = new BoxType('cd', 'プログラム', 'hold', true);
+  CD_BOX.processContent = (lines, options) => {
+    const title = options[0] + "";
+    const language = options[1] + "";
+    putLogApp('debug', "受け取ったlines: ", lines);
+    const htmlBlock = SourceCode(title, language, lines.join(' \n'));
+    putLogApp("debug", `コードブロック${title}[${language}]`);
+    return htmlBlock;
+  };
+  
+  boxTypes = [
+    new BoxType('ex', '説明'),
+    new BoxType('eg', '例題'),
+    new BoxType('pr', '練習'),
+    PB_BOX,
+    ES_BOX,
+    new BoxType('as', '課題'),
+    CD_BOX
+  ];
+
   let isInBox: boolean = false;
   let shouldCloseBox: boolean = false;
   let shouldOpenBox: boolean = false;
-  let prevBoxType: string = "";
-  let nextBoxType: string = "";
+  let prevBoxType: BoxType | undefined = undefined;
+  let nextBoxType: BoxType | undefined = undefined;
   let boxBuffers: string[] = [];
-
-  const problemData: ProblemItem[] = [];
-  let problemCounter = 0;
   
   for (let i = 0; i < lines.length; i++) {
     const line: string = lines[i];
@@ -135,11 +213,11 @@ export function parseMarkdown(markdown: string): ParseResult {
     // [3-1] ボックス書き換えの確認
     // boxOpen(ボックス始まり(#ex, #pr ... ))か
     boxTypes.forEach((box) => {
-      const regex = new RegExp(`^${box}\\s+(.*)`);
+      const regex = new RegExp(`^${box.markSymbol}\\s+(.*)`);
       const match = line.match(regex);
       if(match) {
-        nextBoxType = box;
-        boxHead = match[1]; // #～ (この部分)
+        nextBoxType = box as BoxType;
+        boxHead = match[1]; // #XX [[ここ]]
         shouldOpenBox = true;
       }
     });
@@ -172,79 +250,34 @@ export function parseMarkdown(markdown: string): ParseResult {
           .filter(a => a);
         if (hasOptions) putLogApp("system", "オプション:", options);
         
-        switch (prevBoxType) {
-          case "#pb": {
+        if (prevBoxType) {
+          const closingBox: BoxType = prevBoxType as BoxType;
+          if (closingBox.holdPlace) {
             const placeholderIndex = getPlaceholderCounter();
-            const pbIndex = problemCounter++;
-            const answers = options;
-            const hashAnswers = answers.map(a => simpleHash(a));
-            const encAnswer = obfuscateAnswer(answers[0] || "");
-            putLogApp("debug", "答えのリスト", answers);
-            problemData.push({
-              mode: 'quiz',
-              correctHashes: hashAnswers,
-              encryptedText: encAnswer
-            });
-
-            const htmlBlock = Problem(pbIndex, boxBuffers.join(' <br>\n'));
             const placeholder = `%%%CMD_PLACE_HOLDER_${placeholderIndex}%%%`;
+            const htmlBlock = closingBox.processContent(boxBuffers, options)
             placeholders[placeholder] = htmlBlock;
             processedLines.push(placeholder);
-            putLogApp("debug", "PB オプション:", ...options);
-            break;
+            putLogApp("debug", `ボックス${closingBox.name}(holdPlace):`, htmlBlock);
           }
-          case '#es': {
-            const placeholderIndex = getPlaceholderCounter();
-            const pbIndex = problemCounter++;
-            const rowsNum: number = +options[0];
-            problemData.push({
-              mode: 'essay',
-              correctHashes: [],
-              encryptedText: ''
-            });
-            
-            const htmlBlock = Essay(pbIndex, boxBuffers.join(' <br>\n'), rowsNum || 6);
-            const placeholder = `%%%CMD_PLACE_HOLDER_${placeholderIndex}%%%`;
-            placeholders[placeholder] = htmlBlock;
-            processedLines.push(placeholder);
-            putLogApp("debug", "ES オプション:", ...options);
-            break;
+          else {
+            const htmlBlock = closingBox.processContent(boxBuffers, options);
+            processedLines.push(htmlBlock);
           }
-          case "#cd": {
-            const placeholderIndex = getPlaceholderCounter();
-            const title = options[0] + "";
-            const language = options[1] + "";
-            putLogApp("debug", `コードブロック${title}[${language}]`);
-            const htmlBlock = SourceCode(title, language, boxBuffers.join(' \n'));
-            const placeholder = `%%%CMD_PLACE_HOLDER_${placeholderIndex}%%%`;
-            placeholders[placeholder] = htmlBlock;
-            processedLines.push(placeholder);
-            putLogApp("debug", "PB オプション:", ...options);
-            break;
-          }
-          case '#ex':
-          case '#eg':
-          case '#pr':
-          case '#as':
-          default:
-            processedLines.push(...boxBuffers);
-            break;
         }
-        
         // 正常なbox閉じ処理
         boxBuffers = [];
         isInBox = false;
         processedLines.push(`</div>`);
       }
       else if (shouldCloseBox && !isInBox) {
-          putLogApp('error', 'ボックス外で !# が使われました');
-          processedLines.push(`<span style="color:red"> ボックス外で !# が使われました </span>`);
+        putLogApp('error', 'ボックス外で !# が使われました');
+        processedLines.push(`<span style="color:red"> ボックス外で !# が使われました </span>`);
       }
       // ボックス開始
-      if (shouldOpenBox) {
+      if (shouldOpenBox && nextBoxType) {
         putLogApp('debug', "Open BOX", boxHead);
-        processedLines.push(`<div class="box-common box-${nextBoxType.substring(1)}"><h2>${boxHead}</h2></div>
-        <div class="box-container">`);
+        processedLines.push((nextBoxType as BoxType).createHeader(boxHead || ""));
         boxBuffers = [];
         prevBoxType = nextBoxType;
         isInBox = true;
@@ -254,8 +287,10 @@ export function parseMarkdown(markdown: string): ParseResult {
 
   // ブロック外テキストのインライン処理
   const textWithCommands: string = processedLines.join("\n");
+  putLogApp("debug", "処理後のテキスト:", textWithCommands);
   let finalHtml = textWithCommands;
-  finalHtml = marked.parse(textWithCommands, { async: false }) as string;
+  finalHtml = macrosToHtml(finalHtml, macros, getPlaceholderCounter, placeholders, boxTypes);
+  finalHtml = marked.parse(finalHtml, { async: false }) as string;
   finalHtml = restorePlaceholders(finalHtml, placeholders);
 
   Object.keys(placeholders).forEach(key => {
