@@ -28,6 +28,9 @@
     background-color: #363;
     
 }
+.button-std:hover {
+    background-color: #575;
+}
 .input-js-file-url {
     width: 300px;
 }

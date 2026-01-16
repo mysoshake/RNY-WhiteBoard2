@@ -15,8 +15,8 @@ const STORAGE_KEY_DRAFT_ID = 'rny_teacher_draft';
 
 // 最初の md テキスト
 const SAMPLE_TEXT = 
-`\title{資料全体のタイトル}
-\src{画像の参照ディレクトリ}
+`\\title{資料全体のタイトル}
+\\src{画像の参照ディレクトリ}
 
 # 最大のタイトル
 ## セクション
@@ -28,29 +28,35 @@ const SAMPLE_TEXT =
 # あいさつ
 ようこそ。
 
-\def{@greeting}[1]{<p> $1 さん, こんにちは!  </p>}
+\\def{@greeting}[1]{<div style="color:red; background-color:lime;">こんにちは \\{1} さん</div>}
+@greeting{User}
 
-#ex 説明:計算の基本
+#ex 計算の基本
 1 + 1 は 2 です。
+!#
 
-#eg 例:
+#eg 掛け算
 2 × 4 = 8 かもしれません。
-$2 \times 4 \simeq 8$ とかくかもしれません。
+$2 \\times 4 \\simeq 8$ とかくかもしれません。
+!#
 
-#pr 練習: 
-$\frac{12.56}{3.14}$はいくつ？
+#pr 分数
 
-#as 課題:
+$\\dfrac{12.56}{3.14}$はいくつ？
+
+!#
+
+#as 式変形
 有利多項式の同値変形について調査せよ.
 同値でない式変形の例を挙げよ.
 !#
 
 #pb 問題のタイトル
-次の式を簡単にせよ. いちおう, $x \neq 6$ である.
-$$ \dfrac{x^3 - 216}{x - 6} - x\left(x - 2\right) - 6^2 $$
-#! 答え1 | 答え2 | 答え3 | 4x
+次の式を簡単にせよ. いちおう, $x \\neq 6$ である.
+$$ \\dfrac{x^3 - 216}{x - 6} - x\\left(x - 2\\right) - 6^2 $$
+!# 答え1 | 答え2 | 答え3 | 4x
 
-#es 考察（記述問題）
+#es 記述問題
 @red{Laplace変換}と@green{Fourier変換}について比較し, 500字程度で簡潔にまとめよ.
 !# 10 | オプションの二個目以降は現在は無意味
 
@@ -76,36 +82,55 @@ $$ \dfrac{x^3 - 216}{x - 6} - x\left(x - 2\right) - 6^2 $$
 
 ---
 この上下区切り線
+
 ---
 
-#cd ソースコード with Python
+#cd Code with Python
 usertext = int(input("text"))
 #このエリアには**マークダウン**が適用されて@red{ほしくない}。
 !# main.py | Python
 
-#pb タイトル問題
+#pb 「問題のタイトル」
 問題文('答え')
 !# 答え | ans | こたえ
 
-#pb
-長い問題を
-複数行にわたって書くことも可能
+#pb←スペースがないとダメ
+#pb 
+↑タイトルが無くてもスペースがあれば動作するはず
+
+長い
+問題を
+複数行に
+わたって
+書くことも可能
 
 **太字になってほしい**
 
 @red{ **赤太字になってほしい** }
 
+でも
+
+** @red{逆だと動作しないので注意} **
+
 !# 答え | ans | こたえ
 
+### Sorce Code 1
 \`source code\`
+### Sorce Code 2
+@code{C}{こちらは見た目が変わるインラインコード}
 
 
+# 演習問題
+#pb 足し算
+10 + 20 は？
+!# 30 | ３０
 
-## 演習問題
-#pb 10 + 20 は？ | 30
+#### そのほか
+HTMLダウンロードをして、問題の正解数を７回クリックするとデータ削除ができます。
 
-!#
 `;
+
+
 
 const App: FunctionComponent = () => {
   // 初期化時にLocalStorageから読み込む
@@ -180,6 +205,10 @@ const App: FunctionComponent = () => {
     link.click();
     URL.revokeObjectURL(link.href);
   };
+  // サンプルのリセット
+  const reloadSample = () => {
+    setMarkdown(SAMPLE_TEXT);
+  };
 
   return (
     <div className="app-container">
@@ -189,6 +218,12 @@ const App: FunctionComponent = () => {
           <h1 className="app-header-title debug">授業資料作成ツール（でばっぐ）</h1> :
           <h1 className="app-header-title">授業資料作成ツール</h1> 
         }
+        <button
+          className="button-std"
+          onClick={reloadSample}
+        >
+          MDをリセット
+        </button>
         <div>
           JSファイル パス: 
           <input 
