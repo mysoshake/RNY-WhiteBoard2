@@ -95,3 +95,26 @@
     background: #999;
 }
 
+
+/* マークダウン内部の見た目 */
+
+/* スペースの上に重ねるピリオドの設定 */
+.markdown-visible-space {
+    position: relative;
+    top: -5px;
+    left: 1px;
+    display: inline;
+}
+.markdown-visible-space::before {
+    content: ".";
+    position: absolute;
+    top: -5px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #5999;
+}
+.markdown-visible-space::after {
+    content: " ";
+    position: absolute;
+}

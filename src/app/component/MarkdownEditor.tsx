@@ -53,8 +53,8 @@ const highlight = (text: string) => {
   html = html.replace(/(\\(\^))/g, '<span style="color:#5999;">$2</span>');
   
   // ==========デスケープ==========
-  // [\.] -> タグ付き[.]
-  html = html.replace(/\\(\.)/g, '<span style="color:#5999; position:relative; top:-5px;">$1</span>');
+  // [\.] -> タグ付き[ ] CSSで文字の見た目を変える
+  html = html.replace(/\\(\.)/g, '<span class="markdown-visible-space"> </span>');
   // \\ -> \
   html = html.replace(/(\\\\)/g, '\\');
 
