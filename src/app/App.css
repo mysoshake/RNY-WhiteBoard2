@@ -49,9 +49,14 @@
     overflow: hidden;
 }
 
+.markdown-editor {
+    /* 必須：折り返し設定の統一 */
+    white-space: pre-wrap;      /* 端で折り返す */
+    word-break: break-all;      /* 【重要】単語の途中でも強制的に改行する */
+    overflow-wrap: break-word;  /* 念のため */
+}
 .markdown-editor,
-.markdown-preview
- {
+.markdown-preview {
     flex: 1;
     display: flex;
     width: 49%;
@@ -89,3 +94,4 @@
     overflow-y: auto;
     background: #999;
 }
+

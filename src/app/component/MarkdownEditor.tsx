@@ -112,7 +112,7 @@ export const MarkdownEditor: React.FC<EditorProps> = ({ value, onChange }) => {
   };
   
   const commonStyle: React.CSSProperties = {
-    fontFamily: '"Menlo", "Monaco", "Consolas", monospace',
+    fontFamily: 'monospace, "Menlo", "Monaco", "Consolas"',
     fontSize: '16px',
     lineHeight: '1.5',
     padding: '10px',
@@ -123,10 +123,13 @@ export const MarkdownEditor: React.FC<EditorProps> = ({ value, onChange }) => {
     position: 'absolute',
     top: 0,
     left: 0,
+    /* 必須：折り返し設定の統一 */
     overflow: 'auto',
-    whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
     boxSizing: 'border-box',
+    wordWrap: 'break-word',
+    whiteSpace: 'pre-wrap',      /* 端で折り返す */
+    wordBreak: 'break-all',      /* 【重要】単語の途中でも強制的に改行する */
+    overflowWrap: 'break-word',  /* 念のため */
   };
 
   return (
