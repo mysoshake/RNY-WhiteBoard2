@@ -60,7 +60,7 @@ const highlight = (text: string) => {
 
 
   // 行末に改行の文字 ←
-  html = html.replace(/(\n)/g, '<span style="color:#5999;">←</span>$1');
+  html = html.replace(/(\n)/g, '<span style="color:#5999; position: absolute;">←</span>$1');
   
   html += '<span style="color:#5357;">[EOF]</span>';
   // 末尾の改行の挙動を合わせるために <br> を追加
