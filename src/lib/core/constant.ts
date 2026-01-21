@@ -4,7 +4,7 @@
 export const IS_DEBUG_MODE = false;
 
 // export const STUDENT_MAIN_REPOSITORY = STUDENT_MAIN_REPOSITORY_LOCAL;
-export const STUDENT_MAIN_REPOSITORY = "https://cdn.jsdelivr.net/gh/mysoshake/RNY-WhiteBoard2@acc6b7a2c3b7da64af3fa84ed0b50833e43fd7ea/";
+export const STUDENT_MAIN_REPOSITORY = "https://cdn.jsdelivr.net/gh/mysoshake/RNY-WhiteBoard2@851e3660183022412636977ce46ffe988fb5f7cb/";
 
 export const STUDENT_MAIN_PATH = "dist/student/student-viewer.js";
 export const STUDENT_STYLE_PATH = "src/style.css";
