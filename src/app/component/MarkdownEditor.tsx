@@ -35,7 +35,7 @@ const highlight = (text: string) => {
   
   // ===== 普通のMD記法===== 
   // 太字 ** text **
-  html = html.replace(/(\*\*.+\*\*)/g, '<span style="font-weight:bold;">$1</span>');
+  html = html.replace(/(\*\*.+?\*\*)/g, '<span style="font-weight:bold;">$1</span>');
   // 取消 ~~ text ~~
   html = html.replace(/(~~.+~~)/g, '<span style="text-decoration: line-through;">$1</span>');
   // 箇条書き/番号 + - * 1.
