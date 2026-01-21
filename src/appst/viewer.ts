@@ -119,6 +119,7 @@ function initStudentSystem() {
       overview: overviewText,
       pb_answers: problem_answers,
       es_answers: essay_answers,
+      allProgress: progress,
     };
     return formattedProgress;
   }

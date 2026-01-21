@@ -112,6 +112,7 @@ export interface QuickProgress {
   overview?: string; 
   pb_answers: ProblemAnswer[];
   es_answers: EssayAnswer[];
+  allProgress?: StudentProgress;
 }
 
 // ログ単体の定義
