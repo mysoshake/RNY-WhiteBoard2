@@ -3,7 +3,7 @@
 const Problem = (index: number, contentHtml: string): string => {
   return (
 `
-<div class="problem-container" data-index="${index}">
+<div class="problem-container" data-index="${index}" data-type="problem">
   <div class="question-content">
     ${contentHtml}
   </div>

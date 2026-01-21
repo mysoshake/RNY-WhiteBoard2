@@ -2,7 +2,7 @@
 import { IS_DEBUG_MODE } from "../lib/core/constant";
 import { simpleHash, deobfuscateAnswer } from "../lib/core/cryption";
 import { logger } from "../lib/core/logger";
-import type { ProblemItem, StudentProgress, ActionLog } from "../lib/core/type";
+import type { ProblemItem, StudentProgress, ActionLog, QuickProgress, ProblemAnswer, EssayAnswer } from "../lib/core/type";
 
 declare global {
   interface Window {
@@ -73,6 +73,57 @@ function initStudentSystem() {
   }
   
   /**
+  * --- JSONファイルをチェック者用に整形 ---
+  */
+  function formatJSON(progress: StudentProgress): QuickProgress {
+    putLog("debug", false, "CALL::formatJSON()");
+    const answers = Object.values(progress.answers);
+    
+    let problem_answers: ProblemAnswer[] = [];
+    let essay_answers: EssayAnswer[] = [];
+    
+    let problemCount = 0;
+    let correctCount = 0;
+    let skipCount = 0;
+    
+    for (let ians = 0; ians < answers.length; ians++) {
+      const anAnswer = progress.answers[ians];
+      switch(anAnswer.type) {
+        case 'essay':
+        {
+          const quickAnswer: EssayAnswer = { index: ians, userAnswer: anAnswer.userAnswer };
+          essay_answers.push(quickAnswer);
+          break;
+        }
+        case 'problem':
+        {
+          problemCount++;
+          if (anAnswer.isCorrect) correctCount++;
+          else if (anAnswer.isSkipped) skipCount++;
+          
+          const statusText = !anAnswer.isSkipped ? (anAnswer.isCorrect ? 'o' : 'x') : '-';
+          const quickAnswer: ProblemAnswer = { index: ians, status: statusText, userAnswer: anAnswer.userAnswer };
+          problem_answers.push(quickAnswer);
+          break;
+        }
+        default:
+        {
+          break;
+        }
+      }
+    }
+    const overviewText = `正解数: ${correctCount} / 問題数: ${problemCount} (スキップ: ${skipCount})`;
+    let formattedProgress: QuickProgress = {
+      studentId: progress.studentId,
+      name: progress.name,
+      overview: overviewText,
+      pb_answers: problem_answers,
+      es_answers: essay_answers,
+    };
+    return formattedProgress;
+  }
+  
+  /**
   * --- ストレージ保存 ---
   */
   function saveToStorage() {
@@ -132,7 +183,7 @@ function initStudentSystem() {
             const input = container.querySelector('.student-input, .essay-student-input') as HTMLInputElement | HTMLTextAreaElement;
             const btn = container.querySelector('.check-btn, .essay-submit-btn') as HTMLButtonElement;
             const msg = container.querySelector('.result-msg') as HTMLSpanElement;
-            const type = container.getAttribute('data-type') || 'quiz';
+            const type = container.getAttribute('data-type') || 'problem';
             const problemData = problemList[idx];
             
             if (!input || !btn || !msg) {
@@ -153,7 +204,7 @@ function initStudentSystem() {
                 input.disabled = false; 
                 btn.disabled = false;
                 addAnswerToDrawer(idx, "(記述済み)");
-              } else if (type === 'quiz') {
+              } else if (type === 'problem') {
                 // クイズはロック
                 const ansText = deobfuscateAnswer(problemData.encryptedText);
                 // 正解なら
@@ -399,6 +450,7 @@ function initStudentSystem() {
 
         // データ保存
         progress.answers[index] = {
+          type: type || '',
           userAnswer: "(SKIPPED)",
           isCorrect: false,
           isSkipped: true,
@@ -428,6 +480,7 @@ function initStudentSystem() {
 
         if (!isRestoreMode) {
           progress.answers[index] = {
+            type: type || '',
             userAnswer: val,
             isCorrect: true,
             timestamp: new Date().toISOString(),
@@ -439,8 +492,8 @@ function initStudentSystem() {
           updateProgressDisplay();
         }
       }
-      else {
-        // Quiz
+      else if (type === 'problem') {
+        // Problem
         const hash = simpleHash(val);
         const isCorrect = data.correctHashes.indexOf(hash) !== -1;
 
@@ -457,10 +510,11 @@ function initStudentSystem() {
           
           if (!isRestoreMode) {
             progress.answers[index] = {
+            type: type || '',
               userAnswer: val,
               isCorrect: true,
+              isSkipped: false,
               timestamp: new Date().toISOString(),
-              isSkipped: false
             };
             addAnswerToDrawer(index, ans);
             updateGateVisibility();
@@ -470,10 +524,11 @@ function initStudentSystem() {
           msg.innerHTML = `<span style="color:red">不正解</span>`;
           if (!isRestoreMode) {
             progress.answers[index] = {
+              type: type || '',
               userAnswer: val,
               isCorrect: false,
+              isSkipped: false,
               timestamp: new Date().toISOString(),
-              isSkipped: false
             };
           }
         }
@@ -515,7 +570,8 @@ function initStudentSystem() {
 
       putLog('system', true, 'Progress saved to JSON file');
       saveToStorage();
-      const jsonStr = JSON.stringify(progress, null, 2);
+      const formattedJSON = formatJSON(progress);
+      const jsonStr = JSON.stringify(formattedJSON, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       
       const link = document.createElement('a');

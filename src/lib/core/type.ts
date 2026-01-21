@@ -4,7 +4,7 @@ import { putLogApp } from "./logger";
 
 // 拡張されたデータ定義
 export interface ProblemItem {
-  mode: 'quiz' | 'essay';
+  mode: 'problem' | 'essay';
   correctHashes: string[];
   encryptedText: string;
 }
@@ -83,14 +83,35 @@ export interface StudentProgress {
   name: string;
   answers: {
     [index: number]: {
+      type: string;
       userAnswer: string;
       isCorrect: boolean;
-      timestamp: string;
       isSkipped?: boolean;
+      timestamp: string;
     }
   };
   logs: ActionLog[];
   savedAt: string;
+}
+
+export interface ProblemAnswer {
+    index: number;
+    status: 'o' | 'x' | '-';
+    userAnswer: string;
+}
+
+export interface EssayAnswer {
+    index: number;
+    userAnswer: string;
+}
+
+// データ記録用の進捗データ
+export interface QuickProgress {
+  studentId: string;
+  name: string;
+  overview?: string; 
+  pb_answers: ProblemAnswer[];
+  es_answers: EssayAnswer[];
 }
 
 // ログ単体の定義

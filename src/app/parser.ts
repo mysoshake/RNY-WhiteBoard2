@@ -149,7 +149,7 @@ export function parseMarkdown(markdown: string): ParseResult {
     const encAnswer = obfuscateAnswer(answers[0] || "");
     putLogApp("debug", "答えのリスト", answers);
     problemData.push({
-      mode: 'quiz',
+      mode: 'problem',
       correctHashes: hashAnswers,
       encryptedText: encAnswer
     });
