@@ -99,7 +99,7 @@ export function parseMarkdown(markdown: string): ParseResult {
   inlineMacros.push({
     name: `img`,
     argCount: 4,
-    template: `<img src=${imgRootPath}"\\{1}" alt="\\{2}" width=\\{3} height=\\{4} style="max-width:100%; vertical-align:middle;" />`,
+    template: `<img src="${imgRootPath}\\{1}" alt="\\{2}" width=\\{3} height=\\{4} style="max-width:100%; vertical-align:middle;" />`,
     keepContent: false
   });
 
