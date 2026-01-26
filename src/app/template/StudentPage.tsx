@@ -4,10 +4,13 @@ import React from 'react';
 import type { ProblemProps } from '../../lib/core/type';
 
 export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, scriptUrl, cssString, pageTitle}) => {
-  const jsonString = JSON.stringify(problemData);
   
   /* タイトルがないときはデフォルト */
   const displayTitle = pageTitle || "授業資料";
+  
+  const titleJSON = JSON.stringify(displayTitle);
+  const problemJSON = JSON.stringify(problemData);
+  
   
   // MathJaxの設定スクリプト
   const mathJaxConfig = `
@@ -79,7 +82,8 @@ export const StudentPage: React.FC<ProblemProps> = ({ contentHtml, problemData, 
             </div>
         </div>
         
-        <script dangerouslySetInnerHTML={{ __html: `window.PROBLEM_DATA_LIST = ${jsonString};` }} />
+        <script dangerouslySetInnerHTML={{ __html: `window.PROBLEM_DATA_LIST = ${problemJSON};` }} />
+        <script dangerouslySetInnerHTML={{ __html: `window.LECTURE_TITLE = ${titleJSON};` }} />
         
         {/* メインスクリプト読み込み */}
         <div dangerouslySetInnerHTML={{ __html: `

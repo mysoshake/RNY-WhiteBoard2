@@ -33,6 +33,8 @@ function initStudentSystem() {
     savedAt: ""
   };
   
+  putLog("debug", false, `ストレージキー:${STORAGE_KEY_PROGRESS}`)
+  
   // --- 解答リスト ---
   const drawer = document.getElementById('answer-drawer');
   const drawerToggle = document.getElementById('drawer-toggle');
